@@ -21,7 +21,7 @@ interface WebinarFuelPayload {
     email: string;
     first_name: string;
     last_name: string;
-    phone: string;
+    phone?: string; // Made optional for SMS consent logic
   };
   session: WebinarFuelSession;
 }
@@ -74,9 +74,16 @@ const retryWithBackoff = async <T>(
 // WebinarFuel API submission
 export async function submitToWebinarFuel(
   data: RegistrationData, 
-  session: WebinarFuelSession
+  session: WebinarFuelSession,
+  includePhone: boolean = true
 ): Promise<{ success: boolean; cid?: string; error?: string }> {
   try {
+    console.log('🟦 WebinarFuel submission:', {
+      email: data.email,
+      includePhone,
+      phoneProvided: !!data.phone.trim()
+    });
+
     // Development mode - return mock success
     if (IS_DEVELOPMENT) {
       console.log('DEV MODE: Mock WebinarFuel submission for:', data.email);
@@ -86,14 +93,28 @@ export async function submitToWebinarFuel(
       };
     }
 
+    const registrant: {
+      email: string;
+      first_name: string;
+      last_name: string;
+      phone?: string;
+    } = {
+      email: data.email,
+      first_name: data.firstName,
+      last_name: data.lastName
+    };
+
+    // Only include phone if consent is given and phone is provided
+    if (includePhone && data.phone.trim()) {
+      registrant.phone = data.phone;
+      console.log('📞 Including phone number in WebinarFuel submission');
+    } else {
+      console.log('🚫 Excluding phone number from WebinarFuel submission');
+    }
+
     const payload: WebinarFuelPayload = {
       webinar_id: WEBINAR_FUEL_CONFIG.webinarId,
-      registrant: {
-        email: data.email,
-        first_name: data.firstName,
-        last_name: data.lastName,
-        phone: data.phone
-      },
+      registrant,
       session
     };
 
@@ -182,15 +203,26 @@ export async function submitToInfusionsoft(
 // Dual submission handler
 export async function submitRegistration(
   data: RegistrationData,
-  session: WebinarFuelSession
+  session: WebinarFuelSession,
+  includePhoneForWebinarFuel: boolean = true
 ) {
+  console.log('📊 API clients - submission parameters:', {
+    includePhoneForWebinarFuel,
+    phoneProvided: !!data.phone.trim()
+  });
+
   const results = await Promise.allSettled([
-    submitToWebinarFuel(data, session),
-    submitToInfusionsoft(data)
+    submitToWebinarFuel(data, session, includePhoneForWebinarFuel),
+    submitToInfusionsoft(data) // Always include phone for Infusionsoft
   ]);
 
   const webinarFuelResult = results[0].status === 'fulfilled' ? results[0].value : { success: false, error: 'Failed to submit' };
   const infusionsoftResult = results[1].status === 'fulfilled' ? results[1].value : { success: false, error: 'Failed to submit' };
+
+  console.log('📈 API submission results:', {
+    webinarFuel: webinarFuelResult.success ? 'Success' : 'Failed',
+    infusionsoft: infusionsoftResult.success ? 'Success' : 'Failed'
+  });
 
   // Consider success if at least one submission succeeded
   const overallSuccess = webinarFuelResult.success || infusionsoftResult.success;

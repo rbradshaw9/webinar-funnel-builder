@@ -10,6 +10,7 @@ export interface FormData {
   lastName: string;
   email: string;
   phone: string;
+  smsConsent?: boolean;
 }
 
 // Email validation
@@ -26,9 +27,13 @@ const validateEmail = (email: string): string | null => {
   return null;
 };
 
-// Phone validation
-const validatePhone = (phone: string): string | null => {
-  if (!phone || !phone.trim()) {
+// Phone validation - now optional
+const validatePhone = (phone: string, isRequired: boolean = false): string | null => {
+  if (!isRequired && (!phone || !phone.trim())) {
+    return null; // Phone is optional
+  }
+  
+  if (isRequired && (!phone || !phone.trim())) {
     return 'Phone number is required';
   }
   
@@ -57,7 +62,7 @@ const validateName = (name: string, fieldName: string): string | null => {
 };
 
 // Main validation function
-export const validateForm = (data: FormData): ValidationResult => {
+export const validateForm = (data: FormData, requirePhone: boolean = false): ValidationResult => {
   const errors: Record<string, string> = {};
   
   // Validate first name
@@ -72,8 +77,8 @@ export const validateForm = (data: FormData): ValidationResult => {
   const emailError = validateEmail(data.email);
   if (emailError) errors.email = emailError;
   
-  // Validate phone
-  const phoneError = validatePhone(data.phone);
+  // Validate phone (optional unless requirePhone is true)
+  const phoneError = validatePhone(data.phone, requirePhone);
   if (phoneError) errors.phone = phoneError;
   
   return {
@@ -83,7 +88,7 @@ export const validateForm = (data: FormData): ValidationResult => {
 };
 
 // Real-time validation for individual fields
-export const validateField = (field: string, value: string): string | null => {
+export const validateField = (field: string, value: string, requirePhone: boolean = false): string | null => {
   switch (field) {
     case 'firstName':
       return validateName(value, 'First name');
@@ -92,7 +97,7 @@ export const validateField = (field: string, value: string): string | null => {
     case 'email':
       return validateEmail(value);
     case 'phone':
-      return validatePhone(value);
+      return validatePhone(value, requirePhone);
     default:
       return null;
   }

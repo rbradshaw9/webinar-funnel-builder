@@ -22,7 +22,8 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
     firstName: '',
     lastName: '',
     email: '',
-    phone: ''
+    phone: '',
+    smsConsent: false
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
@@ -53,24 +54,28 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
     setTimeout(loadSessionData, 2000);
   }, []);
   
-  const handleInputChange = (field: keyof FormData, value: string) => {
+  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
     // Format phone number as user types
-    if (field === 'phone') {
+    if (field === 'phone' && typeof value === 'string') {
       value = formatPhoneNumber(value);
     }
     
     setFormData((prev: FormData) => ({ ...prev, [field]: value }));
     
-    // Clear error when user starts typing
-    if (errors[field as keyof FormErrors]) {
+    // Clear error when user starts typing (only for string fields)
+    if (typeof value === 'string' && errors[field as keyof FormErrors]) {
       setErrors((prev: FormErrors) => ({ ...prev, [field]: undefined }));
     }
   };
   
   const handleBlur = (field: keyof FormData) => {
-    const error = validateField(field, formData[field]);
-    if (error) {
-      setErrors(prev => ({ ...prev, [field]: error }));
+    if (typeof formData[field] === 'string') {
+      // For phone field, only validate if SMS consent is checked
+      const requirePhone = field === 'phone' ? !!formData.smsConsent : false;
+      const error = validateField(field, formData[field] as string, requirePhone);
+      if (error) {
+        setErrors(prev => ({ ...prev, [field]: error }));
+      }
     }
   };
   
@@ -84,17 +89,32 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
       setErrors({ general: 'You have already registered for this webinar. Check your email for confirmation details.' });
       return;
     }
-    
-    // Validate all fields
+
+    // Validate all fields with SMS consent consideration
     const newErrors: FormErrors = {};
-    Object.keys(formData).forEach(key => {
-      const error = validateField(key as keyof FormData, formData[key as keyof FormData]);
+    
+    // Always validate required fields
+    ['firstName', 'lastName', 'email'].forEach(key => {
+      const error = validateField(key as keyof FormData, formData[key as keyof FormData] as string);
       if (error) {
         newErrors[key as keyof FormErrors] = error;
       }
     });
     
-    if (Object.keys(newErrors).length > 0) {
+    // Validate phone only if SMS consent is checked
+    if (formData.smsConsent) {
+      const phoneError = validateField('phone', formData.phone, true);
+      if (phoneError) {
+        newErrors.phone = phoneError;
+      }
+    }
+
+    console.log('🔍 Form validation:', {
+      hasErrors: Object.keys(newErrors).length > 0,
+      errors: newErrors,
+      smsConsent: formData.smsConsent,
+      phoneProvided: !!formData.phone.trim()
+    });    if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
@@ -107,6 +127,13 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
     setIsSubmitting(true);
     setErrors({});
     
+    console.log('🚀 Registration submission started:', {
+      email: formData.email,
+      smsConsent: formData.smsConsent,
+      phoneProvided: !!formData.phone.trim(),
+      sessionId: sessionData?.webinar_session_id
+    });
+    
     try {
       const response = await fetch('/api/register', {
         method: 'POST',
@@ -115,7 +142,9 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
         },
         body: JSON.stringify({
           ...formData,
-          session: sessionData
+          session: sessionData,
+          // Flag to indicate whether phone should be sent to WebinarFuel
+          includePhoneForWebinarFuel: formData.smsConsent && !!formData.phone.trim()
         }),
       });
       
@@ -161,9 +190,12 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
             placeholder="Enter your first name"
             disabled={isSubmitting}
           />
-          {errors.firstName && (
-            <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
-          )}
+          {/* Fixed height error container */}
+          <div className="h-6 mt-1">
+            {errors.firstName && (
+              <p className="text-sm text-red-600">{errors.firstName}</p>
+            )}
+          </div>
         </div>
         
         {/* Last Name */}
@@ -183,9 +215,12 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
             placeholder="Enter your last name"
             disabled={isSubmitting}
           />
-          {errors.lastName && (
-            <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
-          )}
+          {/* Fixed height error container */}
+          <div className="h-6 mt-1">
+            {errors.lastName && (
+              <p className="text-sm text-red-600">{errors.lastName}</p>
+            )}
+          </div>
         </div>
         
         {/* Email */}
@@ -205,15 +240,18 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
             placeholder="Enter your email address"
             disabled={isSubmitting}
           />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-          )}
+          {/* Fixed height error container */}
+          <div className="h-6 mt-1">
+            {errors.email && (
+              <p className="text-sm text-red-600">{errors.email}</p>
+            )}
+          </div>
         </div>
         
         {/* Phone */}
         <div>
           <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-            Phone Number *
+            Phone Number {formData.smsConsent ? '*' : '(Optional)'}
           </label>
           <input
             type="tel"
@@ -227,9 +265,28 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
             placeholder="(555) 123-4567"
             disabled={isSubmitting}
           />
-          {errors.phone && (
-            <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
-          )}
+          {/* Fixed height error container */}
+          <div className="h-6 mt-1">
+            {errors.phone && (
+              <p className="text-sm text-red-600">{errors.phone}</p>
+            )}
+          </div>
+        </div>
+        
+        {/* SMS Consent */}
+        <div className="flex items-start space-x-3">
+          <input
+            type="checkbox"
+            id="smsConsent"
+            checked={formData.smsConsent || false}
+            onChange={(e) => handleInputChange('smsConsent', e.target.checked)}
+            className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            disabled={isSubmitting}
+          />
+          <label htmlFor="smsConsent" className="text-sm text-gray-700 leading-5">
+            I consent to receive SMS text messages about this webinar. Standard messaging rates may apply.
+            {formData.smsConsent && <span className="text-red-600 ml-1">*</span>}
+          </label>
         </div>
         
         {/* Session Info Display */}
@@ -241,12 +298,14 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
           </div>
         )}
         
-        {/* General Error */}
-        {errors.general && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-            <p className="text-sm text-red-800">{errors.general}</p>
-          </div>
-        )}
+        {/* General Error - Fixed height container */}
+        <div className="min-h-[60px]">
+          {errors.general && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm text-red-800">{errors.general}</p>
+            </div>
+          )}
+        </div>
         
         {/* Submit Button */}
         <button

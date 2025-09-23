@@ -147,8 +147,8 @@ export const initializeWebinarFuelWidget = () => {
   
   // Initialize window._wf if not already present
   if (typeof window !== 'undefined') {
-    (window as any)._wf = (window as any)._wf || [];
-    (window as any)._wf.push({
+    (window as unknown as { _wf?: unknown[] })._wf = (window as unknown as { _wf?: unknown[] })._wf || [];
+    (window as unknown as { _wf: unknown[] })._wf.push({
       id: 'KvKUagFa1nobkfcZGaSK3KiP'
     });
   }

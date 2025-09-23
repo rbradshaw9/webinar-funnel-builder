@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import RegistrationForm from '@/components/RegistrationForm';
 
@@ -89,8 +88,8 @@ export default function HomePage() {
                 </div>
                 
                 <blockquote className="text-sm text-gray-700 italic">
-                  "Andy's teaching style is fantastic. With Andy you will definitely be able to learn to invest for cash flow with confidence."
-                  <footer className="mt-2 text-xs text-gray-600">— Justin O'Keefe</footer>
+                  &ldquo;Andy&apos;s teaching style is fantastic. With Andy you will definitely be able to learn to invest for cash flow with confidence.&rdquo;
+                  <footer className="mt-2 text-xs text-gray-600">— Justin O&apos;Keefe</footer>
                 </blockquote>
               </div>
 
@@ -99,7 +98,7 @@ export default function HomePage() {
                 <div className="flex items-center space-x-2">
                   <span className="text-red-600 text-lg">⚠️</span>
                   <p className="text-red-800 font-medium">
-                    Limited Spots Available - Don't Miss Out!
+                    Limited Spots Available - Don&apos;t Miss Out!
                   </p>
                 </div>
               </div>

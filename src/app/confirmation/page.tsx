@@ -17,8 +17,8 @@ function ConfirmationContent() {
       setIsWidgetLoaded(true);
       
       // Initialize widget
-      (window as any)._wf = (window as any)._wf || [];
-      (window as any)._wf.push({
+      (window as unknown as { _wf?: unknown[] })._wf = (window as unknown as { _wf?: unknown[] })._wf || [];
+      (window as unknown as { _wf: unknown[] })._wf.push({
         id: 'xCo1kQcuJZKwRwTTXcySfXJc',
         forwardCid: true
       });
@@ -54,7 +54,7 @@ function ConfirmationContent() {
                 <span className="text-3xl text-white">✓</span>
               </div>
               <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-                🎉 You're Registered!
+                🎉 You&apos;re Registered!
               </h1>
               <p className="text-xl text-gray-700 mb-6">
                 Your spot for the Income Stacking masterclass has been secured.
@@ -77,7 +77,7 @@ function ConfirmationContent() {
                 <div>
                   <h3 className="font-bold text-gray-900 mb-2">Check Your Email</h3>
                   <p className="text-gray-600 text-sm">
-                    We've sent you a confirmation email with your webinar access link and calendar invite. 
+                    We&apos;ve sent you a confirmation email with your webinar access link and calendar invite. 
                     Please check your inbox (and spam folder).
                   </p>
                 </div>
@@ -107,7 +107,7 @@ function ConfirmationContent() {
                 <div>
                   <h3 className="font-bold text-gray-900 mb-2">Come Prepared</h3>
                   <p className="text-gray-600 text-sm">
-                    Bring a notepad and be ready to learn Andy's proven income stacking strategies. 
+                    Bring a notepad and be ready to learn Andy&apos;s proven income stacking strategies. 
                     This will be an interactive session with live Q&A.
                   </p>
                 </div>

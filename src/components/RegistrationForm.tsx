@@ -27,7 +27,11 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
   
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [sessionData, setSessionData] = useState<any>(null);
+  const [sessionData, setSessionData] = useState<{ 
+    webinar_session_id: number; 
+    scheduled_at: string; 
+    dayOfWeek?: string;
+  } | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(true);
   
   // Initialize WebinarFuel widget and parse session data
@@ -55,11 +59,11 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
       value = formatPhoneNumber(value);
     }
     
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev: FormData) => ({ ...prev, [field]: value }));
     
     // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+    if (errors[field as keyof FormErrors]) {
+      setErrors((prev: FormErrors) => ({ ...prev, [field]: undefined }));
     }
   };
   

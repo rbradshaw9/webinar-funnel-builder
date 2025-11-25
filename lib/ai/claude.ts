@@ -73,11 +73,11 @@ Hidden: <input type="hidden" name="funnel_slug" value="${context.slug}" />
 Fields: Email, FirstName, LastName, Phone1${context.infusionsoftFields.hasSmsConsent ? ', inf_custom_SMSOptInWebinar checkbox' : ''}
 Widget: <div data-webinarfuel-webinar="${context.webinarfuelData.webinarId}" data-webinarfuel-widget="${context.webinarfuelData.widgetId}"></div><script src="https://d3pw37i36t41cq.cloudfront.net/embed_v2.js" data-wf-load="wf-widget-embed"></script>
 
-Return complete HTML only.`;
+Keep concise: 3-4 sections max, single testimonial. Return complete HTML only.`;
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
-    max_tokens: 4096, // Reduced to fit within rate limits (3 pages × 4096 = 12288 tokens total)
+    max_tokens: 3500, // Reduced to ensure pages complete within limit
     messages: [{ role: "user", content: prompt }],
   }, {
     timeout: 120000, // 2 minute timeout
@@ -130,11 +130,11 @@ CALENDAR JS: Extract ?session param, build links to /api/calendar/google and /ap
 WIDGET: ${context.confirmationWidgetCode || `<div data-webinarfuel-webinar="${context.webinarfuelData.webinarId}" data-webinarfuel-widget="${context.webinarfuelData.widgetId}"></div><script src="https://d3pw37i36t41cq.cloudfront.net/embed_v2.js" data-wf-load="wf-widget-embed"></script>`}
 FOOTER: Same as registration - © 2025 Tanner Training LLC, Terms|Privacy|Disclaimer links, full disclaimer text
 
-Return complete HTML.`;
+Keep concise: 2-3 sections. Return complete HTML.`;
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
-    max_tokens: 4096, // Reduced to fit within rate limits
+    max_tokens: 3500, // Reduced to ensure pages complete within limit
     messages: [{ role: "user", content: prompt }],
   }, {
     timeout: 120000, // 2 minute timeout

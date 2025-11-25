@@ -187,7 +187,7 @@ export default function EditFunnelPage() {
             <div className="bg-gray-50 p-4 rounded-md">
               <p className="text-sm text-gray-600">Conversion Rate</p>
               <p className="text-2xl font-bold text-green-600">
-                {funnel.conversion_rate.toFixed(2)}%
+                {typeof funnel.conversion_rate === 'number' ? funnel.conversion_rate.toFixed(2) : '0.00'}%
               </p>
             </div>
           </div>

@@ -210,7 +210,7 @@ export default function AnalyticsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex text-sm font-semibold text-green-600">
-                        {funnel.conversion_rate.toFixed(2)}%
+                        {typeof funnel.conversion_rate === 'number' ? funnel.conversion_rate.toFixed(2) : '0.00'}%
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

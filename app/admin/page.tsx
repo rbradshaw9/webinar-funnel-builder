@@ -157,7 +157,7 @@ export default function AdminPage() {
                   <div className="flex justify-between">
                     <span>Conversion:</span>
                     <span className="font-semibold text-green-600">
-                      {funnel.conversion_rate.toFixed(2)}%
+                      {typeof funnel.conversion_rate === 'number' ? funnel.conversion_rate.toFixed(2) : '0.00'}%
                     </span>
                   </div>
                 </div>

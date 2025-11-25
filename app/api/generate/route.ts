@@ -11,7 +11,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, infusionsoftCode, webinarfuelCode, webinarfuelUrl } = await request.json();
+    const { 
+      name, 
+      webinarTitle,
+      webinarDescription,
+      targetAudience,
+      mainBenefits,
+      socialProof,
+      hostInfo,
+      urgency,
+      infusionsoftCode, 
+      webinarfuelCode, 
+      webinarfuelUrl 
+    } = await request.json();
 
     // Parse Infusionsoft form
     const infusionsoftData = parseInfusionsoftForm(infusionsoftCode);
@@ -34,6 +46,13 @@ export async function POST(request: Request) {
     // Prepare context for AI generation
     const context: FunnelContext = {
       name,
+      webinarTitle: webinarTitle || name,
+      webinarDescription,
+      targetAudience,
+      mainBenefits,
+      socialProof,
+      hostInfo,
+      urgency,
       infusionsoftFields: {
         actionUrl: infusionsoftData.actionUrl,
         xid: infusionsoftData.xid,
@@ -48,11 +67,15 @@ export async function POST(request: Request) {
       },
     };
 
-    // Generate pages using Claude AI
+    console.log('[Generate API] Starting page generation with context');
+
+    // Generate pages using Claude AI with increased timeout
     const [registrationPage, confirmationPage] = await Promise.all([
       generateRegistrationPage(context),
       generateConfirmationPage(context),
     ]);
+
+    console.log('[Generate API] Pages generated successfully');
 
     return NextResponse.json({
       registrationPage,

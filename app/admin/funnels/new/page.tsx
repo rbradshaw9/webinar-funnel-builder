@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Step = "basic" | "infusionsoft" | "webinarfuel" | "generate" | "review";
+type Step = "basic" | "content" | "infusionsoft" | "webinarfuel" | "generate" | "review";
 
 export default function NewFunnelPage() {
   const router = useRouter();
@@ -14,6 +14,15 @@ export default function NewFunnelPage() {
   const [funnelData, setFunnelData] = useState({
     name: "",
     slug: "",
+    // Content information
+    webinarTitle: "",
+    webinarDescription: "",
+    targetAudience: "",
+    mainBenefits: "",
+    socialProof: "",
+    hostInfo: "",
+    urgency: "",
+    // Form codes
     infusionsoftCode: "",
     webinarfuelCode: "",
     webinarfuelUrl: "",
@@ -26,6 +35,7 @@ export default function NewFunnelPage() {
 
   const steps: { id: Step; title: string; description: string }[] = [
     { id: "basic", title: "Basic Info", description: "Name and URL slug" },
+    { id: "content", title: "Webinar Details", description: "Tell us about your webinar" },
     { id: "infusionsoft", title: "Infusionsoft", description: "Paste form code" },
     { id: "webinarfuel", title: "WebinarFuel", description: "Paste widget code" },
     { id: "generate", title: "Generate", description: "AI creates pages" },
@@ -57,6 +67,12 @@ export default function NewFunnelPage() {
         setError("Please enter a funnel name");
         return;
       }
+      setCurrentStep("content");
+    } else if (currentStep === "content") {
+      if (!funnelData.webinarTitle || !funnelData.webinarDescription) {
+        setError("Please fill in at least the webinar title and description");
+        return;
+      }
       setCurrentStep("infusionsoft");
     } else if (currentStep === "infusionsoft") {
       if (!funnelData.infusionsoftCode) {
@@ -78,7 +94,7 @@ export default function NewFunnelPage() {
   };
 
   const handleBack = () => {
-    const stepOrder: Step[] = ["basic", "infusionsoft", "webinarfuel", "generate", "review"];
+    const stepOrder: Step[] = ["basic", "content", "infusionsoft", "webinarfuel", "generate", "review"];
     const currentIndex = stepOrder.indexOf(currentStep);
     if (currentIndex > 0) {
       setCurrentStep(stepOrder[currentIndex - 1]);
@@ -95,6 +111,13 @@ export default function NewFunnelPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: funnelData.name,
+          webinarTitle: funnelData.webinarTitle,
+          webinarDescription: funnelData.webinarDescription,
+          targetAudience: funnelData.targetAudience,
+          mainBenefits: funnelData.mainBenefits,
+          socialProof: funnelData.socialProof,
+          hostInfo: funnelData.hostInfo,
+          urgency: funnelData.urgency,
           infusionsoftCode: funnelData.infusionsoftCode,
           webinarfuelCode: funnelData.webinarfuelCode,
           webinarfuelUrl: funnelData.webinarfuelUrl,
@@ -102,7 +125,8 @@ export default function NewFunnelPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate pages");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to generate pages");
       }
 
       const data = await response.json();
@@ -112,7 +136,8 @@ export default function NewFunnelPage() {
       });
       setCurrentStep("review");
     } catch (err: any) {
-      setError(err.message || "Failed to generate pages");
+      console.error("Generation error:", err);
+      setError(err.message || "Failed to generate pages. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -244,6 +269,122 @@ export default function NewFunnelPage() {
           </div>
         )}
 
+        {/* Content/Details Step */}
+        {currentStep === "content" && (
+          <div className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+              <p className="text-sm text-blue-800">
+                <strong>💡 Pro Tip:</strong> The more details you provide, the better Claude AI can research your niche and create a high-converting funnel tailored to your specific audience.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Webinar Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={funnelData.webinarTitle}
+                onChange={(e) =>
+                  setFunnelData({ ...funnelData, webinarTitle: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., The Income Stacking Blueprint"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Webinar Description & What You'll Teach <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                value={funnelData.webinarDescription}
+                onChange={(e) =>
+                  setFunnelData({ ...funnelData, webinarDescription: e.target.value })
+                }
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Describe what the webinar covers, the main problem it solves, and what attendees will learn. Be specific about the outcome they'll achieve."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Target Audience & Their Pain Points
+              </label>
+              <textarea
+                value={funnelData.targetAudience}
+                onChange={(e) =>
+                  setFunnelData({ ...funnelData, targetAudience: e.target.value })
+                }
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., Real estate investors struggling with inconsistent cash flow, looking for passive income strategies"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Main Benefits (3-5 Key Takeaways)
+              </label>
+              <textarea
+                value={funnelData.mainBenefits}
+                onChange={(e) =>
+                  setFunnelData({ ...funnelData, mainBenefits: e.target.value })
+                }
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="List the key benefits or bullet points. One per line:&#10;- How to create 3 income streams from one property&#10;- The exact strategy I used to go from $5K to $50K monthly&#10;- How to automate 80% of property management"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Social Proof & Credibility
+              </label>
+              <textarea
+                value={funnelData.socialProof}
+                onChange={(e) =>
+                  setFunnelData({ ...funnelData, socialProof: e.target.value })
+                }
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 10,000+ students, Featured in Forbes, $500M in student results, Testimonials, Case studies"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Host/Instructor Information
+              </label>
+              <textarea
+                value={funnelData.hostInfo}
+                onChange={(e) =>
+                  setFunnelData({ ...funnelData, hostInfo: e.target.value })
+                }
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Brief bio, credentials, achievements that establish authority"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Urgency/Scarcity Elements
+              </label>
+              <textarea
+                value={funnelData.urgency}
+                onChange={(e) =>
+                  setFunnelData({ ...funnelData, urgency: e.target.value })
+                }
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., Limited seats, Special bonus for early registrants, One-time offer"
+              />
+            </div>
+          </div>
+        )}
+
         {/* Infusionsoft Step */}
         {currentStep === "infusionsoft" && (
           <div>
@@ -314,9 +455,20 @@ export default function NewFunnelPage() {
                 <p className="text-lg font-medium text-gray-900 mb-2">
                   Generating Your Pages...
                 </p>
-                <p className="text-gray-600">
-                  Claude AI is creating your registration and confirmation pages
+                <p className="text-gray-600 mb-4">
+                  Claude AI is researching your niche and creating high-converting pages
                 </p>
+                <div className="max-w-md mx-auto text-left bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+                  <p className="font-medium text-gray-900 mb-2">What's happening:</p>
+                  <ul className="space-y-1">
+                    <li>✓ Analyzing your webinar topic and audience</li>
+                    <li>✓ Researching best practices for your niche</li>
+                    <li>✓ Crafting compelling copy and headlines</li>
+                    <li>✓ Designing conversion-optimized layouts</li>
+                    <li>✓ Integrating forms and widgets seamlessly</li>
+                  </ul>
+                  <p className="mt-3 text-xs text-gray-500">This may take 30-60 seconds...</p>
+                </div>
               </>
             ) : (
               <>
@@ -336,9 +488,18 @@ export default function NewFunnelPage() {
                 <p className="text-lg font-medium text-gray-900 mb-2">
                   Ready to Generate
                 </p>
-                <p className="text-gray-600">
-                  Click continue to have AI create your funnel pages
+                <p className="text-gray-600 mb-4">
+                  Claude AI will research your niche and create custom, high-converting funnel pages
                 </p>
+                <div className="max-w-md mx-auto text-left bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
+                  <p className="font-medium mb-2">🎯 AI-Powered Generation</p>
+                  <ul className="space-y-1 text-xs">
+                    <li>• Niche-specific research and insights</li>
+                    <li>• Conversion-optimized copy and design</li>
+                    <li>• Mobile-responsive layouts</li>
+                    <li>• Seamlessly integrated forms and widgets</li>
+                  </ul>
+                </div>
               </>
             )}
           </div>

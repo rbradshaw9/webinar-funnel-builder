@@ -132,8 +132,10 @@ export default function NewFunnelPage() {
 
   const [generatedPages, setGeneratedPages] = useState({
     registrationHtml: "",
+    registrationHtmlB: "",
     confirmationHtml: "",
   });
+  const [selectedVariant, setSelectedVariant] = useState<'A' | 'B'>('A');
 
   const steps: { id: Step; title: string; description: string }[] = [
     { id: "basic", title: "Basic Info", description: "Name and URL slug" },
@@ -234,6 +236,7 @@ export default function NewFunnelPage() {
       const data = await response.json();
       setGeneratedPages({
         registrationHtml: data.registrationPage,
+        registrationHtmlB: data.registrationPageVariantB,
         confirmationHtml: data.confirmationPage,
       });
       setCurrentStep("review");
@@ -681,20 +684,49 @@ export default function NewFunnelPage() {
           <div className="space-y-6">
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-medium text-gray-900">Registration Page Preview</h3>
+                <div>
+                  <h3 className="font-medium text-gray-900">Registration Page Preview</h3>
+                  <p className="text-sm text-gray-600 mt-1">Two variants generated for A/B testing</p>
+                </div>
                 <button
                   onClick={() => {
+                    const html = selectedVariant === 'A' ? generatedPages.registrationHtml : generatedPages.registrationHtmlB;
                     const win = window.open('', '_blank');
-                    win?.document.write(generatedPages.registrationHtml);
+                    win?.document.write(html);
                   }}
                   className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                 >
                   Open Full Preview →
                 </button>
               </div>
+              
+              {/* Variant Selector */}
+              <div className="flex gap-2 mb-3">
+                <button
+                  onClick={() => setSelectedVariant('A')}
+                  className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                    selectedVariant === 'A' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Variant A
+                </button>
+                <button
+                  onClick={() => setSelectedVariant('B')}
+                  className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                    selectedVariant === 'B' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Variant B
+                </button>
+              </div>
+              
               <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
                 <iframe
-                  srcDoc={generatedPages.registrationHtml}
+                  srcDoc={(selectedVariant === 'A' ? generatedPages.registrationHtml : generatedPages.registrationHtmlB) + '<style>[data-webinarfuel-webinar], [data-webinarfuel-widget], .wf_target { display: none !important; }</style>'}
                   className="w-full h-96"
                   title="Registration Page Preview"
                   sandbox="allow-same-origin allow-scripts"
@@ -716,7 +748,7 @@ export default function NewFunnelPage() {
               </div>
               <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
                 <iframe
-                  srcDoc={generatedPages.confirmationHtml}
+                  srcDoc={generatedPages.confirmationHtml + '<style>[data-webinarfuel-webinar], [data-webinarfuel-widget], .wf_target { display: none !important; }</style>'}
                   className="w-full h-96"
                   title="Confirmation Page Preview"
                   sandbox="allow-same-origin allow-scripts"

@@ -44,9 +44,11 @@ export default function ComprehensiveEditPage() {
   // AI editing
   const [aiPrompt, setAiPrompt] = useState("");
   const [editingPage, setEditingPage] = useState<"registration" | "confirmation">("registration");
+  const [regVariant, setRegVariant] = useState<"A" | "B">("A");
 
   // Manual code editing
   const [regHtml, setRegHtml] = useState("");
+  const [regHtmlB, setRegHtmlB] = useState("");
   const [confHtml, setConfHtml] = useState("");
 
   useEffect(() => {
@@ -82,6 +84,7 @@ export default function ComprehensiveEditPage() {
       });
 
       setRegHtml(f.registration_page_html || "");
+      setRegHtmlB(f.registration_page_html_variant_b || "");
       setConfHtml(f.confirmation_page_html || "");
     } catch (err: any) {
       setError(err.message || "Failed to load funnel");
@@ -649,10 +652,42 @@ export default function ComprehensiveEditPage() {
 
             {(funnel.registration_page_html || funnel.confirmation_page_html) && (
               <div className="pt-6 border-t">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Preview Current Page</h3>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-sm font-semibold text-gray-900">Preview Current Page</h3>
+                  {editingPage === "registration" && funnel.registration_page_html_variant_b && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setRegVariant("A")}
+                        className={`px-3 py-1 text-xs font-medium rounded ${
+                          regVariant === "A"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        }`}
+                      >
+                        Variant A
+                      </button>
+                      <button
+                        onClick={() => setRegVariant("B")}
+                        className={`px-3 py-1 text-xs font-medium rounded ${
+                          regVariant === "B"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        }`}
+                      >
+                        Variant B
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div className="border-2 border-gray-300 rounded-lg overflow-hidden">
                   <iframe
-                    srcDoc={editingPage === "registration" ? funnel.registration_page_html : funnel.confirmation_page_html}
+                    srcDoc={
+                      editingPage === "registration"
+                        ? regVariant === "A"
+                          ? funnel.registration_page_html
+                          : funnel.registration_page_html_variant_b || funnel.registration_page_html
+                        : funnel.confirmation_page_html
+                    }
                     className="w-full h-96"
                     title="Page Preview"
                     sandbox="allow-same-origin allow-scripts"
@@ -671,9 +706,11 @@ export default function ComprehensiveEditPage() {
             </p>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Registration Page HTML
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Registration Page HTML - Variant A
+                </label>
+              </div>
               <textarea
                 value={regHtml}
                 onChange={(e) => setRegHtml(e.target.value)}
@@ -682,6 +719,23 @@ export default function ComprehensiveEditPage() {
                 spellCheck={false}
               />
             </div>
+
+            {regHtmlB && (
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Registration Page HTML - Variant B
+                  </label>
+                </div>
+                <textarea
+                  value={regHtmlB}
+                  onChange={(e) => setRegHtmlB(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-xs"
+                  rows={15}
+                  spellCheck={false}
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -38,6 +38,7 @@ export interface Funnel {
   
   // Generated Content
   registration_page_html?: string;
+  registration_page_html_variant_b?: string;
   registration_page_metadata?: Record<string, any>;
   confirmation_page_html?: string;
   confirmation_page_metadata?: Record<string, any>;
@@ -232,12 +233,14 @@ export async function getFunnelAnalytics(funnelId: number, days: number = 30) {
 export async function updateFunnelPages(
   id: number,
   registrationHtml: string,
-  confirmationHtml: string
+  confirmationHtml: string,
+  registrationHtmlVariantB?: string
 ): Promise<void> {
   await sql`
     UPDATE funnels
     SET
       registration_page_html = ${registrationHtml},
+      registration_page_html_variant_b = ${registrationHtmlVariantB || null},
       confirmation_page_html = ${confirmationHtml},
       updated_at = NOW()
     WHERE id = ${id}

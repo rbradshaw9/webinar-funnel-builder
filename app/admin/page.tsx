@@ -173,7 +173,7 @@ export default function AdminPage() {
                   </Link>
                 ) : (
                   <Link
-                    href={`/admin/funnels/${funnel.id}`}
+                    href={`/admin/funnels/${funnel.id}/edit`}
                     className="text-sm font-medium text-blue-600 hover:text-blue-500"
                   >
                     Edit

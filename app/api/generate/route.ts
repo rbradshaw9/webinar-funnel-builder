@@ -79,14 +79,17 @@ export async function POST(request: Request) {
 
       console.log('[Generate API] Regenerating pages for funnel:', funnel.id);
 
-      const [registrationPageA, registrationPageB, confirmationPage] = await Promise.all([
+      // Generate registration pages FIRST
+      const [registrationPageA, registrationPageB] = await Promise.all([
         generateRegistrationPage(context, 'A'),
         generateRegistrationPage(context, 'B'),
-        generateConfirmationPage(context),
       ]);
 
-      // Update database (store variant A as default)
-      await updateFunnelPages(funnel.id, registrationPageA, confirmationPage);
+      // Generate confirmation page AFTER (so it can match registration styles)
+      const confirmationPage = await generateConfirmationPage(context, registrationPageA);
+
+      // Update database (store both variants)
+      await updateFunnelPages(funnel.id, registrationPageA, confirmationPage, registrationPageB);
 
       console.log('[Generate API] Pages regenerated successfully');
 
@@ -163,14 +166,18 @@ export async function POST(request: Request) {
 
     console.log('[Generate API] Starting page generation with context');
 
-    // Generate pages using Claude AI with increased timeout (includes A/B variants)
-    const [registrationPageA, registrationPageB, confirmationPage] = await Promise.all([
+    // Generate registration pages FIRST (so AI can reuse styles for confirmation)
+    const [registrationPageA, registrationPageB] = await Promise.all([
       generateRegistrationPage(context, 'A'),
       generateRegistrationPage(context, 'B'),
-      generateConfirmationPage(context),
     ]);
 
-    console.log('[Generate API] Pages generated successfully (2 variants + confirmation)');
+    console.log('[Generate API] Registration pages generated, now generating confirmation page');
+
+    // Generate confirmation page AFTER registration (pass registration HTML for style matching)
+    const confirmationPage = await generateConfirmationPage(context, registrationPageA);
+
+    console.log('[Generate API] All pages generated successfully (2 variants + confirmation)');
 
     return NextResponse.json({
       registrationPage: registrationPageA,

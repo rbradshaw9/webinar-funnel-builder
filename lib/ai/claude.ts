@@ -188,9 +188,25 @@ Return ONLY complete HTML (no markdown). Modern, professional, visually stunning
   throw new Error("Failed to generate registration page");
 }
 
-export async function generateConfirmationPage(context: FunnelContext, registrationPageStyles?: string): Promise<string> {
+export async function generateConfirmationPage(context: FunnelContext, registrationPageHtml?: string): Promise<string> {
   console.log('[Claude AI] Generating confirmation page...');
+  console.log('[Claude AI] Using registration page HTML for style matching:', !!registrationPageHtml);
   
+  const registrationStylesSection = registrationPageHtml ? `
+
+REGISTRATION PAGE HTML (for style reference):
+\`\`\`html
+${registrationPageHtml.substring(0, 3000)}
+\`\`\`
+
+CRITICAL: Extract and REUSE the exact same:
+- Color scheme (gradients, button colors, text colors)
+- Typography (font families, sizes, weights)
+- Button styles (padding, rounded corners, shadows, hover effects)
+- Section spacing and layout patterns
+- Footer structure and styling
+` : '';
+
   const prompt = `Create a webinar confirmation/thank you page that MATCHES the registration page design.
 
 CONTEXT:
@@ -198,6 +214,7 @@ Title: ${context.webinarTitle}
 Description: ${context.webinarDescription}
 ${context.socialProof ? `Proof: ${context.socialProof}` : ''}
 ${context.hostInfo ? `Host: ${context.hostInfo}` : ''}
+${registrationStylesSection}
 
 DESIGN REQUIREMENTS (CRITICAL - MUST MATCH REGISTRATION PAGE):
 - Use Tailwind CSS CDN: <script src="https://cdn.tailwindcss.com"></script>

@@ -39,6 +39,14 @@ export interface FunnelContext {
 
 export async function generateRegistrationPage(context: FunnelContext, variant: 'A' | 'B' = 'A'): Promise<string> {
   console.log(`[Claude AI] Generating registration page variant ${variant}...`);
+  console.log(`[Claude AI] Context:`, {
+    title: context.webinarTitle,
+    hasDescription: !!context.webinarDescription,
+    hasTargetAudience: !!context.targetAudience,
+    hasBenefits: !!context.mainBenefits,
+    hasSocialProof: !!context.socialProof,
+    hasHostInfo: !!context.hostInfo,
+  });
   
   const variantNote = variant === 'B' ? '\n\nVARIANT B REQUIREMENTS:\n- Use a DIFFERENT design approach than variant A\n- Try different: color scheme, layout structure, or headline angle\n- Maintain same conversion elements but with fresh presentation\n- Still modern and professional but visually distinct' : '';
   
@@ -144,19 +152,36 @@ Return ONLY complete HTML (no markdown). Modern, professional, visually stunning
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
-    max_tokens: 4096,
+    max_tokens: 8192, // Increased from 4096 to prevent truncation
     messages: [{ role: "user", content: prompt }],
   }, {
     timeout: 120000, // 2 minute timeout
   });
 
-  console.log('[Claude AI] Registration page generated');
+  console.log('[Claude AI] Registration page response:', {
+    variant,
+    stopReason: message.stop_reason,
+    inputTokens: message.usage?.input_tokens,
+    outputTokens: message.usage?.output_tokens,
+    contentLength: message.content[0].type === 'text' ? message.content[0].text.length : 0,
+  });
+
+  if (message.stop_reason === 'max_tokens') {
+    console.warn('[Claude AI] WARNING: Response was truncated due to max_tokens limit!');
+  }
 
   const content = message.content[0];
   if (content.type === "text") {
     // Strip markdown code blocks if present
     let html = content.text;
     html = html.replace(/^```html\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+    
+    // Check if HTML looks incomplete (no closing body/html tags)
+    if (!html.includes('</body>') || !html.includes('</html>')) {
+      console.error('[Claude AI] ERROR: Generated HTML appears incomplete (missing closing tags)');
+      console.error('[Claude AI] Last 200 chars:', html.slice(-200));
+    }
+    
     return html.trim();
   }
   
@@ -213,19 +238,35 @@ Return ONLY complete HTML (no markdown, no code blocks). Enthusiastic, professio
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
-    max_tokens: 4096,
+    max_tokens: 8192, // Increased from 4096 to prevent truncation
     messages: [{ role: "user", content: prompt }],
   }, {
     timeout: 120000, // 2 minute timeout
   });
 
-  console.log('[Claude AI] Confirmation page generated');
+  console.log('[Claude AI] Confirmation page response:', {
+    stopReason: message.stop_reason,
+    inputTokens: message.usage?.input_tokens,
+    outputTokens: message.usage?.output_tokens,
+    contentLength: message.content[0].type === 'text' ? message.content[0].text.length : 0,
+  });
+
+  if (message.stop_reason === 'max_tokens') {
+    console.warn('[Claude AI] WARNING: Confirmation page was truncated due to max_tokens limit!');
+  }
 
   const content = message.content[0];
   if (content.type === "text") {
     // Strip markdown code blocks if present
     let html = content.text;
     html = html.replace(/^```html\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+    
+    // Check if HTML looks incomplete
+    if (!html.includes('</body>') || !html.includes('</html>')) {
+      console.error('[Claude AI] ERROR: Confirmation page HTML appears incomplete (missing closing tags)');
+      console.error('[Claude AI] Last 200 chars:', html.slice(-200));
+    }
+    
     return html.trim();
   }
   

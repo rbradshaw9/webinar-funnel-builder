@@ -1,25 +1,11 @@
 {
-  "version": 2,
-  "name": "webinar-funnel-builder",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/income-stacking-fb",
-      "dest": "/"
-    },
-    {
-      "src": "/income-stacking-fb/(.*)",
-      "dest": "/$1"
-    }
-  ],
-  "regions": ["iad1"],
-  "framework": "nextjs",
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  }
 }

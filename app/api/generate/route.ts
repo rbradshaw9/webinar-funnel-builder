@@ -50,6 +50,7 @@ export async function POST(request: Request) {
 
       // Generate with funnel data (all fields already exist in interface)
       const context: FunnelContext = {
+        slug: funnel.slug,
         name: funnel.name,
         webinarTitle: funnel.webinar_title || funnel.name,
         webinarDescription: funnel.webinar_description || '',
@@ -136,7 +137,9 @@ export async function POST(request: Request) {
     }
 
     // Prepare context for AI generation
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const context: FunnelContext = {
+      slug,
       name,
       webinarTitle: webinarTitle || name,
       webinarDescription,

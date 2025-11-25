@@ -10,6 +10,7 @@ const anthropic = new Anthropic({
 });
 
 export interface FunnelContext {
+  slug: string;
   name: string;
   webinarTitle: string;
   webinarDescription: string;
@@ -134,7 +135,7 @@ IMPORTANT: Create layouts that are visually interesting and different from typic
 
 6. TECHNICAL INTEGRATION (CRITICAL - FORM SUBMISSION):
    - Form action="/api/register" method="POST" (THIS IS REQUIRED - NOT Infusionsoft URL!)
-   - FIRST hidden field (CRITICAL): <input type="hidden" name="funnel_slug" value="${context.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}" />
+   - FIRST hidden field (CRITICAL): <input type="hidden" name="funnel_slug" value="${context.slug}" />
    - Form field names (use exact names):
      * <input type="email" name="Email" required />
      * <input type="text" name="FirstName" required />

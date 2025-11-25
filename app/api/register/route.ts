@@ -8,12 +8,19 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const slug = formData.get("funnel_slug") as string;
 
+    console.log('[Register API] Form submission received:', {
+      slug,
+      allFields: Array.from(formData.entries()).map(([k, v]) => `${k}=${v}`)
+    });
+
     if (!slug) {
+      console.error('[Register API] Missing funnel_slug in form data');
       return NextResponse.json({ error: "Missing funnel slug" }, { status: 400 });
     }
 
     const funnel = await getFunnelBySlug(slug);
     if (!funnel || funnel.status !== "active") {
+      console.error('[Register API] Funnel not found or inactive:', { slug, found: !!funnel, status: funnel?.status });
       return NextResponse.json({ error: "Funnel not found" }, { status: 404 });
     }
 
@@ -24,6 +31,8 @@ export async function POST(request: Request) {
     const phone = formData.get("Phone1") as string || formData.get("phone") as string;
     const smsConsent = formData.get("inf_custom_SMSOptInWebinar") === "1" || 
                        formData.get("sms_consent") === "1";
+
+    console.log('[Register API] Extracted data:', { email, firstName, lastName, phone, smsConsent });
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
@@ -62,6 +71,14 @@ export async function POST(request: Request) {
       hiddenFields: { inf_form_xid: funnel.infusionsoft_xid!, inf_form_name: funnel.name },
     };
 
+    console.log('[Register API] Submitting to APIs:', {
+      infusionsoftUrl: funnel.infusionsoft_action_url,
+      webinarfuelWebinarId: funnel.webinarfuel_webinar_id,
+      webinarfuelWidgetId: funnel.webinarfuel_widget_id,
+      sessionId: sessionData?.sessionId || 0,
+      hasBearerToken: !!process.env.WEBINARFUEL_BEARER_TOKEN,
+    });
+
     // Submit to both APIs in parallel
     const [infusionsoftResult, webinarfuelResult] = await Promise.all([
       // Submit to Infusionsoft
@@ -71,7 +88,10 @@ export async function POST(request: Request) {
         lastName: lastName || "",
         phone: phone || "",
         smsConsent,
-      }).catch(err => ({ success: false, error: err.message })),
+      }).catch(err => {
+        console.error('[Register API] Infusionsoft error:', err);
+        return { success: false, error: err.message };
+      }),
 
       // Submit to WebinarFuel (only include phone if SMS consent is checked)
       submitToWebinarFuel(
@@ -87,8 +107,16 @@ export async function POST(request: Request) {
           source: "registration_form",
         },
         process.env.WEBINARFUEL_BEARER_TOKEN!
-      ).catch(err => ({ success: false, error: err.message })),
+      ).catch(err => {
+        console.error('[Register API] WebinarFuel error:', err);
+        return { success: false, error: err.message };
+      }),
     ]);
+
+    console.log('[Register API] API results:', {
+      infusionsoft: infusionsoftResult,
+      webinarfuel: webinarfuelResult,
+    });
 
     // Record submission in database
     await createSubmission({

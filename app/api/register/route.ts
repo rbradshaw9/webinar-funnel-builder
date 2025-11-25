@@ -73,7 +73,7 @@ export async function POST(request: Request) {
         smsConsent,
       }).catch(err => ({ success: false, error: err.message })),
 
-      // Submit to WebinarFuel
+      // Submit to WebinarFuel (only include phone if SMS consent is checked)
       submitToWebinarFuel(
         funnel.webinarfuel_webinar_id!,
         sessionData?.sessionId || 0,
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
           email,
           firstName: firstName || "",
           lastName: lastName || "",
-          phone: phone || "",
+          phone: smsConsent ? (phone || "") : "", // Only send phone if SMS consent is true
         },
         process.env.WEBINARFUEL_BEARER_TOKEN!
       ).catch(err => ({ success: false, error: err.message })),

@@ -114,14 +114,20 @@ export async function submitToWebinarFuel(
   bearerToken: string
 ): Promise<{ success: boolean; cid?: string; error?: string }> {
   try {
+    // Only include phone in payload if it's provided and not empty
+    const registrant: any = {
+      email: userData.email,
+      first_name: userData.firstName,
+      last_name: userData.lastName,
+    };
+    
+    if (userData.phone && userData.phone.trim() !== '') {
+      registrant.phone = userData.phone;
+    }
+
     const payload = {
       webinar_id: webinarId,
-      registrant: {
-        email: userData.email,
-        first_name: userData.firstName,
-        last_name: userData.lastName,
-        ...(userData.phone && { phone: userData.phone })
-      },
+      registrant,
       session: {
         webinar_session_id: sessionId
       }

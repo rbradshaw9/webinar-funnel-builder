@@ -9,6 +9,8 @@ export interface InfusionsoftFormData {
   hasSMSConsent: boolean;
   smsConsentFieldName?: string;
   hiddenFields: Record<string, string>;
+  trackingScripts?: string[]; // Infusionsoft tracking scripts to preserve
+  rawFormHtml?: string; // Complete form HTML for reference
 }
 
 /**
@@ -37,14 +39,37 @@ export function parseInfusionsoftForm(html: string): InfusionsoftFormData {
   // Extract form name
   const formName = $('input[name="inf_form_name"]').val() as string || 'Webinar Registration';
 
-  // Map standard fields
+  // Extract ALL input fields (not just standard ones)
   const fieldMappings: Record<string, string> = {};
-  const standardFields = ['FirstName', 'LastName', 'Email', 'Phone1'];
+  const hiddenFields: Record<string, string> = {};
   
-  standardFields.forEach(field => {
-    const input = $(`input[name="inf_field_${field}"]`);
-    if (input.length) {
-      fieldMappings[field.toLowerCase().replace('1', '')] = input.attr('name')!;
+  // Get all input fields
+  $('input').each((_, el) => {
+    const $input = $(el);
+    const name = $input.attr('name');
+    const type = $input.attr('type') || 'text';
+    const value = $input.attr('value') || '';
+    
+    if (!name) return;
+    
+    // Store hidden fields with their values
+    if (type === 'hidden') {
+      hiddenFields[name] = value;
+    }
+    // Map visible input fields
+    else if (type !== 'submit' && type !== 'button') {
+      // Map to simplified key for easier access
+      if (name === 'inf_field_FirstName') fieldMappings.firstname = name;
+      else if (name === 'inf_field_LastName') fieldMappings.lastname = name;
+      else if (name === 'inf_field_Email') fieldMappings.email = name;
+      else if (name === 'inf_field_Phone1') fieldMappings.phone = name;
+      else if (type === 'checkbox') {
+        // Store checkbox fields by their name
+        fieldMappings[name] = name;
+      } else {
+        // Store all other fields by their name
+        fieldMappings[name] = name;
+      }
     }
   });
 
@@ -56,19 +81,24 @@ export function parseInfusionsoftForm(html: string): InfusionsoftFormData {
     const name = $(el).attr('name') || '';
     return name.toLowerCase().includes('text') || 
            name.toLowerCase().includes('sms') ||
-           $(el).next('label').text().toLowerCase().includes('text message');
+           $(el).next('label').text().toLowerCase().includes('text message') ||
+           $(el).siblings('label').text().toLowerCase().includes('text message');
   });
   
   const hasSMSConsent = smsConsentInput.length > 0;
   const smsConsentFieldName = hasSMSConsent ? smsConsentInput.attr('name') : undefined;
 
-  // Extract all hidden fields
-  const hiddenFields: Record<string, string> = {};
-  $('input[type="hidden"]').each((_, el) => {
-    const name = $(el).attr('name');
-    const value = $(el).attr('value');
-    if (name && value) {
-      hiddenFields[name] = value;
+  // Extract tracking scripts
+  const trackingScripts: string[] = [];
+  $('script').each((_, el) => {
+    const $script = $(el);
+    const src = $script.attr('src') || '';
+    
+    // Preserve Infusionsoft tracking scripts
+    if (src.includes('infusionsoft.com') || src.includes('webTracking') || 
+        src.includes('timezone') || src.includes('jquery') || src.includes('overwriteReferer')) {
+      // Get full script tag as string
+      trackingScripts.push($.html($script));
     }
   });
 
@@ -80,7 +110,9 @@ export function parseInfusionsoftForm(html: string): InfusionsoftFormData {
     hasPhoneField,
     hasSMSConsent,
     smsConsentFieldName,
-    hiddenFields
+    hiddenFields,
+    trackingScripts,
+    rawFormHtml: html
   };
 }
 

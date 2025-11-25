@@ -25,6 +25,8 @@ export interface FunnelContext {
     xid: string;
     fields: Record<string, string>;
     hasSmsConsent: boolean;
+    trackingScripts?: string[];
+    hiddenFields?: Record<string, string>;
   };
   webinarfuelData: {
     webinarId: number;
@@ -52,11 +54,14 @@ ${context.additionalNotes ? `Special Instructions: ${context.additionalNotes}` :
 TECHNICAL INTEGRATION:
 Integrate these technical requirements seamlessly:
 
-Infusionsoft Form:
-- Action URL: ${context.infusionsoftFields.actionUrl}
-- XID: ${context.infusionsoftFields.xid}
-- Field Mappings: ${JSON.stringify(context.infusionsoftFields.fields)}
+Infusionsoft Form Data (for reference only - form will POST to /api/register):
+- Original Action URL: ${context.infusionsoftFields.actionUrl}
+- Original XID: ${context.infusionsoftFields.xid}
+- All Field Mappings: ${JSON.stringify(context.infusionsoftFields.fields)}
 - SMS Consent Field: ${context.infusionsoftFields.hasSmsConsent ? 'Required' : 'Not needed'}
+- Hidden Fields: Include ALL hidden fields from original form
+- Tracking Scripts: Include these at bottom of page (before </body>):
+${context.infusionsoftFields.trackingScripts ? context.infusionsoftFields.trackingScripts.join('\n') : '<!-- No tracking scripts -->'}
 
 WebinarFuel Widget:
 - Webinar ID: ${context.webinarfuelData.webinarId}
@@ -95,16 +100,16 @@ DESIGN REQUIREMENTS (CRITICAL - Apple-level quality):
    - Bullet points highlighting transformation/benefits
    - Authority indicators (credentials, logos, press mentions)
 
-5. FOOTER (REQUIRED):
-   - Full-width bg-gray-900 text-gray-400 py-12
-   - Company name: "Tanner Training LLC" in text-white
-   - Links: <a href="https://thecashflowacademy.com/terms-and-conditions/" class="text-gray-400 hover:text-white">Terms of Use</a>
-   - Links: <a href="https://thecashflowacademy.com/privacy-policy/" class="text-gray-400 hover:text-white">Privacy Policy</a>
-   - Disclaimer in small text (text-xs text-gray-500 max-w-4xl mx-auto): "Tanner Training LLC is providing this training and any related materials (including newsletters, blog posts, and other communications) for educational purposes only. We are not providing legal, accounting, or financial advisory services, and this is not a solicitation or recommendation to buy or sell any stocks, options, or other financial instruments or investments. Examples that address specific assets, stocks, options, or transactions are for illustrative purposes only and may not represent specific trades or transactions that we have conducted. In fact, we may use examples that are different to or the opposite of transactions we have conducted or positions we hold. This training is not intended as a solicitation for any future relationship between the students or participants and the trainer. No express or implied warranties are being made with respect to these services and products. There is no guarantee that use of any of the services or products will result in a profit. All investing and trading in the securities markets involves risk, including the risk of loss. All investing decisions are personal and should only be made after thorough research and the engagement of professional assistance to the extent you believe necessary."
+5. FOOTER (REQUIRED - MUST INCLUDE AT BOTTOM OF PAGE):
+   - Full-width footer with bg-gray-900 text-gray-400 py-12 px-6
+   - Centered content: max-w-4xl mx-auto text-center
+   - Company name first: <p class="text-white font-semibold mb-4">© 2024 Tanner Training LLC</p>
+   - Links on one line with separators: <a href="https://thecashflowacademy.com/terms-and-conditions/" class="text-gray-400 hover:text-white">Terms of Use</a> <span class="text-gray-600">|</span> <a href="https://thecashflowacademy.com/privacy-policy/" class="text-gray-400 hover:text-white">Privacy Policy</a> <span class="text-gray-600">|</span> <a href="https://thecashflowacademy.com/disclaimer/" class="text-gray-400 hover:text-white">Disclaimer</a>
+   - Full disclaimer below in small text (text-xs text-gray-500 mt-6 leading-relaxed): "Tanner Training LLC is providing this training and any related materials (including newsletters, blog posts, and other communications) for educational purposes only. We are not providing legal, accounting, or financial advisory services, and this is not a solicitation or recommendation to buy or sell any stocks, options, or other financial instruments or investments. Examples that address specific assets, stocks, options, or transactions are for illustrative purposes only and may not represent specific trades or transactions that we have conducted. In fact, we may use examples that are different to or the opposite of transactions we have conducted or positions we hold. This training is not intended as a solicitation for any future relationship between the students or participants and the trainer. No express or implied warranties are being made with respect to these services and products. There is no guarantee that use of any of the services or products will result in a profit. All investing and trading in the securities markets involves risk, including the risk of loss. All investing decisions are personal and should only be made after thorough research and the engagement of professional assistance to the extent you believe necessary."
 
-6. TECHNICAL INTEGRATION (CRITICAL):
-   - Form MUST POST to: /api/register (NOT directly to Infusionsoft!)
-   - Hidden field with funnel slug: <input type="hidden" name="funnel_slug" value="${context.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}" />
+6. TECHNICAL INTEGRATION (CRITICAL - FORM SUBMISSION):
+   - Form action="/api/register" method="POST" (THIS IS REQUIRED - NOT Infusionsoft URL!)
+   - FIRST hidden field (CRITICAL): <input type="hidden" name="funnel_slug" value="${context.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}" />
    - Form field names (use exact names):
      * <input type="email" name="Email" required />
      * <input type="text" name="FirstName" required />
@@ -131,7 +136,10 @@ Return ONLY complete HTML (no markdown). Professional Apple-quality design with 
 
   const content = message.content[0];
   if (content.type === "text") {
-    return content.text;
+    // Strip markdown code blocks if present
+    let html = content.text;
+    html = html.replace(/^```html\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+    return html.trim();
   }
   
   throw new Error("Failed to generate registration page");
@@ -167,7 +175,12 @@ CONTENT SECTIONS:
 5. What to Expect: Bullet points of benefits
 6. Social proof section
 
-Return ONLY complete HTML (no markdown). Enthusiastic, professional design with Tailwind.`;
+FOOTER (REQUIRED - SAME AS REGISTRATION PAGE):
+- Full-width bg-gray-900 text-gray-400 py-12 px-6
+- © 2024 Tanner Training LLC with links to Terms, Privacy, Disclaimer
+- Full disclaimer text in text-xs
+
+Return ONLY complete HTML (no markdown, no code blocks). Enthusiastic, professional design with Tailwind.`;
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
@@ -181,7 +194,10 @@ Return ONLY complete HTML (no markdown). Enthusiastic, professional design with 
 
   const content = message.content[0];
   if (content.type === "text") {
-    return content.text;
+    // Strip markdown code blocks if present
+    let html = content.text;
+    html = html.replace(/^```html\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+    return html.trim();
   }
   
   throw new Error("Failed to generate confirmation page");

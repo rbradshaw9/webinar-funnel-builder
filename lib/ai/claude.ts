@@ -63,16 +63,23 @@ WebinarFuel Widget:
 - Widget ID: ${context.webinarfuelData.widgetId}
 - Widget Type: ${context.webinarfuelData.widgetType}
 
-REQUIREMENTS:
-- Modern hero with gradients, mobile-responsive Tailwind CSS
-- HTML form POST to: ${context.infusionsoftFields.actionUrl}
-- Hidden fields: inf_field_xid="${context.infusionsoftFields.xid}"
-- Visible fields: ${Object.keys(context.infusionsoftFields.fields).map(k => `inf_field_${k}`).join(', ')}
-${context.infusionsoftFields.hasSmsConsent ? '- SMS consent checkbox' : ''}
-- WebinarFuel: <div data-webinarfuel-webinar="${context.webinarfuelData.webinarId}" data-webinarfuel-widget="${context.webinarfuelData.widgetId}"></div>
-- Script: https://app.webinarfuel.com/widgets/v2/embed.js
+STYLING REQUIREMENTS (CRITICAL):
+- Include Tailwind CSS CDN: <script src="https://cdn.tailwindcss.com"></script>
+- Professional gradients: bg-gradient-to-br from-blue-600 to-purple-700
+- Large headings with text-4xl or text-5xl
+- Proper spacing with py-12, px-4, etc.
+- Rounded buttons with shadow: rounded-lg shadow-lg px-8 py-4
+- Mobile responsive with container mx-auto max-w-4xl
 
-Return complete HTML only (no markdown). Include <!DOCTYPE html>, inline CSS, compelling copy based on context.`;
+TECHNICAL INTEGRATION:
+- HTML form POST to: ${context.infusionsoftFields.actionUrl}
+- Hidden field: <input type="hidden" name="inf_field_xid" value="${context.infusionsoftFields.xid}" />
+- Form fields: ${Object.keys(context.infusionsoftFields.fields).map(k => `inf_field_${k}`).join(', ')}
+${context.infusionsoftFields.hasSmsConsent ? '- SMS consent checkbox with inf_custom_SMSOptInWebinar' : ''}
+- WebinarFuel widget: <div data-webinarfuel-webinar="${context.webinarfuelData.webinarId}" data-webinarfuel-widget="${context.webinarfuelData.widgetId}"></div>
+- Widget script: <script src="https://app.webinarfuel.com/widgets/v2/embed.js"></script>
+
+Return ONLY complete HTML (no markdown blocks). Must include <!DOCTYPE html>, <head> with Tailwind CDN, compelling sales copy.`;
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
@@ -103,19 +110,26 @@ Description: ${context.webinarDescription}
 ${context.socialProof ? `Proof: ${context.socialProof}` : ''}
 ${context.hostInfo ? `Host: ${context.hostInfo}` : ''}
 
-REQUIREMENTS:
-1. Congratulatory hero confirming registration
-2. Next steps: Check email, add to calendar
-3. Calendar buttons:
-   - Google: /api/calendar/google?email={EMAIL}&session={SESSION}
-   - ICS: /api/calendar/ics?email={EMAIL}&session={SESSION}
-4. WebinarFuel widget:
+STYLING (CRITICAL):
+- Tailwind CDN: <script src="https://cdn.tailwindcss.com"></script>
+- Success colors: bg-green-600, text-green-600
+- Large celebration text: text-5xl font-bold
+- Icons: ✓ checkmark, 📅 calendar, 📧 email
+- Professional gradients and shadows
+
+CONTENT SECTIONS:
+1. Hero: Big congratulations with checkmark icon
+2. Next Steps: Check email (bold), add to calendar
+3. Calendar Buttons:
+   - <a href="/api/calendar/google" class="bg-blue-600...">Add to Google Calendar</a>
+   - <a href="/api/calendar/ics" class="bg-gray-600...">Download ICS</a>
+4. WebinarFuel countdown/replay widget:
    <div data-webinarfuel-webinar="${context.webinarfuelData.webinarId}" data-webinarfuel-widget="${context.webinarfuelData.widgetId}"></div>
    <script src="https://app.webinarfuel.com/widgets/v2/embed.js"></script>
-5. What to expect section with benefits
-6. Excitement builders with social proof
+5. What to Expect: Bullet points of benefits
+6. Social proof section
 
-Return complete HTML only (no markdown). Modern design, Tailwind CSS, inline styles/scripts, enthusiastic tone.`;
+Return ONLY complete HTML (no markdown). Enthusiastic, professional design with Tailwind.`;
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",

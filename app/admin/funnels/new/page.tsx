@@ -697,7 +697,7 @@ export default function NewFunnelPage() {
                   srcDoc={generatedPages.registrationHtml}
                   className="w-full h-96"
                   title="Registration Page Preview"
-                  sandbox="allow-same-origin"
+                  sandbox="allow-same-origin allow-scripts"
                 />
               </div>
             </div>
@@ -719,7 +719,7 @@ export default function NewFunnelPage() {
                   srcDoc={generatedPages.confirmationHtml}
                   className="w-full h-96"
                   title="Confirmation Page Preview"
-                  sandbox="allow-same-origin"
+                  sandbox="allow-same-origin allow-scripts"
                 />
               </div>
             </div>

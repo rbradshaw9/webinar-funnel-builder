@@ -65,6 +65,8 @@ export async function POST(request: Request) {
           xid: infusionsoftData.xid,
           fields: infusionsoftData.fieldMappings,
           hasSmsConsent: infusionsoftData.hasSMSConsent,
+          trackingScripts: infusionsoftData.trackingScripts,
+          hiddenFields: infusionsoftData.hiddenFields,
         },
         webinarfuelData: {
           webinarId: webinarfuelData.webinarId,
@@ -144,6 +146,8 @@ export async function POST(request: Request) {
         xid: infusionsoftData.xid,
         fields: infusionsoftData.fieldMappings,
         hasSmsConsent: infusionsoftData.hasSMSConsent,
+        trackingScripts: infusionsoftData.trackingScripts,
+        hiddenFields: infusionsoftData.hiddenFields,
       },
       webinarfuelData: {
         webinarId: webinarfuelData.webinarId,

@@ -189,7 +189,7 @@ export async function incrementFunnelSubmissions(funnelId: number) {
   await sql`
     UPDATE funnels 
     SET total_submissions = total_submissions + 1,
-        conversion_rate = (total_submissions + 1)::DECIMAL / NULLIF(total_views, 0) * 100
+        conversion_rate = COALESCE((total_submissions + 1)::DECIMAL / NULLIF(total_views, 0) * 100, 0)
     WHERE id = ${funnelId}
   `;
   
@@ -201,7 +201,7 @@ export async function incrementFunnelSubmissions(funnelId: number) {
     ON CONFLICT (funnel_id, date)
     DO UPDATE SET 
       submissions = funnel_analytics.submissions + 1,
-      conversion_rate = (funnel_analytics.submissions + 1)::DECIMAL / NULLIF(funnel_analytics.views, 0) * 100
+      conversion_rate = COALESCE((funnel_analytics.submissions + 1)::DECIMAL / NULLIF(funnel_analytics.views, 0) * 100, 0)
   `;
 }
 

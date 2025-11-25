@@ -23,6 +23,8 @@ export async function POST(request: Request) {
       socialProof,
       hostInfo,
       urgency,
+      referenceUrl,
+      additionalNotes,
       infusionsoftCode, 
       webinarfuelCode, 
       webinarfuelUrl 
@@ -56,6 +58,8 @@ export async function POST(request: Request) {
       socialProof,
       hostInfo,
       urgency,
+      referenceUrl,
+      additionalNotes,
       infusionsoftFields: {
         actionUrl: infusionsoftData.actionUrl,
         xid: infusionsoftData.xid,

@@ -22,6 +22,8 @@ export default function NewFunnelPage() {
     socialProof: "",
     hostInfo: "",
     urgency: "",
+    referenceUrl: "",
+    additionalNotes: "",
     // Form codes
     infusionsoftCode: "",
     webinarfuelCode: "",
@@ -382,6 +384,42 @@ export default function NewFunnelPage() {
                 placeholder="e.g., Limited seats, Special bonus for early registrants, One-time offer"
               />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Reference URL (Optional)
+              </label>
+              <input
+                type="url"
+                value={funnelData.referenceUrl || ''}
+                onChange={(e) =>
+                  setFunnelData({ ...funnelData, referenceUrl: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="https://example.com/existing-page"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Claude will analyze this page for images, layout inspiration, and style references
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Additional Instructions (Optional)
+              </label>
+              <textarea
+                value={funnelData.additionalNotes || ''}
+                onChange={(e) =>
+                  setFunnelData({ ...funnelData, additionalNotes: e.target.value })
+                }
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., Use testimonial images from reference URL, Include countdown timer, Make hero section bold and eye-catching"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Provide specific instructions for images, colors, tone, or special elements
+              </p>
+            </div>
           </div>
         )}
 
@@ -507,21 +545,49 @@ export default function NewFunnelPage() {
 
         {/* Review Step */}
         {currentStep === "review" && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <h3 className="font-medium text-gray-900 mb-2">Registration Page Preview</h3>
-              <div className="border border-gray-300 rounded-md p-4 bg-gray-50 max-h-64 overflow-auto">
-                <pre className="text-xs whitespace-pre-wrap">
-                  {generatedPages.registrationHtml.substring(0, 500)}...
-                </pre>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-medium text-gray-900">Registration Page Preview</h3>
+                <button
+                  onClick={() => {
+                    const win = window.open('', '_blank');
+                    win?.document.write(generatedPages.registrationHtml);
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Open Full Preview →
+                </button>
+              </div>
+              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
+                <iframe
+                  srcDoc={generatedPages.registrationHtml}
+                  className="w-full h-96"
+                  title="Registration Page Preview"
+                  sandbox="allow-same-origin"
+                />
               </div>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900 mb-2">Confirmation Page Preview</h3>
-              <div className="border border-gray-300 rounded-md p-4 bg-gray-50 max-h-64 overflow-auto">
-                <pre className="text-xs whitespace-pre-wrap">
-                  {generatedPages.confirmationHtml.substring(0, 500)}...
-                </pre>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-medium text-gray-900">Confirmation Page Preview</h3>
+                <button
+                  onClick={() => {
+                    const win = window.open('', '_blank');
+                    win?.document.write(generatedPages.confirmationHtml);
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Open Full Preview →
+                </button>
+              </div>
+              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
+                <iframe
+                  srcDoc={generatedPages.confirmationHtml}
+                  className="w-full h-96"
+                  title="Confirmation Page Preview"
+                  sandbox="allow-same-origin"
+                />
               </div>
             </div>
             <div className="bg-blue-50 border border-blue-200 rounded-md p-4">

@@ -18,6 +18,8 @@ export interface FunnelContext {
   socialProof?: string;
   hostInfo?: string;
   urgency?: string;
+  referenceUrl?: string;
+  additionalNotes?: string;
   infusionsoftFields: {
     actionUrl: string;
     xid: string;
@@ -44,6 +46,8 @@ ${context.targetAudience ? `Audience: ${context.targetAudience}` : ''}
 ${context.mainBenefits ? `Benefits: ${context.mainBenefits}` : ''}
 ${context.socialProof ? `Proof: ${context.socialProof}` : ''}
 ${context.hostInfo ? `Host: ${context.hostInfo}` : ''}
+${context.referenceUrl ? `Reference URL: ${context.referenceUrl} - Analyze this page for images, layout, and style inspiration` : ''}
+${context.additionalNotes ? `Special Instructions: ${context.additionalNotes}` : ''}
 
 TECHNICAL INTEGRATION:
 Integrate these technical requirements seamlessly:

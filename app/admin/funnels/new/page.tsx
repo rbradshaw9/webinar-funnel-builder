@@ -1,15 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type Step = "basic" | "content" | "infusionsoft" | "webinarfuel" | "generate" | "review";
 
 export default function NewFunnelPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const draftId = searchParams.get("draft");
+  
   const [currentStep, setCurrentStep] = useState<Step>("basic");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [draftFunnelId, setDraftFunnelId] = useState<number | null>(
+    draftId ? parseInt(draftId) : null
+  );
+  const [autoSaving, setAutoSaving] = useState(false);
   
   const [funnelData, setFunnelData] = useState({
     name: "",
@@ -29,6 +36,99 @@ export default function NewFunnelPage() {
     webinarfuelCode: "",
     webinarfuelUrl: "",
   });
+  
+  // Load draft on mount
+  useEffect(() => {
+    if (draftId) {
+      loadDraft(parseInt(draftId));
+    }
+  }, [draftId]);
+  
+  // Auto-save draft when data changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (funnelData.name && funnelData.slug) {
+        saveDraft();
+      }
+    }, 2000); // Save 2 seconds after user stops typing
+    
+    return () => clearTimeout(timeoutId);
+  }, [funnelData]);
+  
+  const loadDraft = async (id: number) => {
+    try {
+      const response = await fetch(`/api/funnels/${id}`);
+      if (response.ok) {
+        const { funnel } = await response.json();
+        setFunnelData({
+          name: funnel.name || "",
+          slug: funnel.slug || "",
+          webinarTitle: funnel.webinar_title || "",
+          webinarDescription: funnel.webinar_description || "",
+          targetAudience: funnel.target_audience || "",
+          mainBenefits: funnel.main_benefits || "",
+          socialProof: funnel.social_proof || "",
+          hostInfo: funnel.host_info || "",
+          urgency: funnel.urgency || "",
+          referenceUrl: funnel.reference_url || "",
+          additionalNotes: funnel.additional_notes || "",
+          infusionsoftCode: funnel.infusionsoft_form_html || "",
+          webinarfuelCode: funnel.webinarfuel_widget_html || "",
+          webinarfuelUrl: funnel.webinarfuel_url || "",
+        });
+        setDraftFunnelId(id);
+      }
+    } catch (err) {
+      console.error("Failed to load draft:", err);
+    }
+  };
+  
+  const saveDraft = async () => {
+    setAutoSaving(true);
+    try {
+      const payload = {
+        slug: funnelData.slug,
+        name: funnelData.name,
+        status: "draft",
+        webinar_title: funnelData.webinarTitle,
+        webinar_description: funnelData.webinarDescription,
+        target_audience: funnelData.targetAudience,
+        main_benefits: funnelData.mainBenefits,
+        social_proof: funnelData.socialProof,
+        host_info: funnelData.hostInfo,
+        urgency: funnelData.urgency,
+        reference_url: funnelData.referenceUrl,
+        additional_notes: funnelData.additionalNotes,
+        infusionsoft_form_html: funnelData.infusionsoftCode,
+        webinarfuel_widget_html: funnelData.webinarfuelCode,
+        webinarfuel_url: funnelData.webinarfuelUrl,
+      };
+
+      if (draftFunnelId) {
+        // Update existing draft
+        await fetch(`/api/funnels/${draftFunnelId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        // Create new draft
+        const response = await fetch("/api/funnels", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (response.ok) {
+          const { funnel } = await response.json();
+          setDraftFunnelId(funnel.id);
+        }
+      }
+    } catch (err) {
+      console.error("Auto-save failed:", err);
+    } finally {
+      setAutoSaving(false);
+    }
+  };
 
   const [generatedPages, setGeneratedPages] = useState({
     registrationHtml: "",
@@ -150,27 +250,43 @@ export default function NewFunnelPage() {
     setError("");
 
     try {
-      const response = await fetch("/api/funnels", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          slug: funnelData.slug,
-          name: funnelData.name,
-          status: "active",
-          infusionsoft_form_html: funnelData.infusionsoftCode,
-          webinarfuel_widget_html: funnelData.webinarfuelCode,
-          registration_page_html: generatedPages.registrationHtml,
-          confirmation_page_html: generatedPages.confirmationHtml,
-        }),
-      });
+      const payload = {
+        slug: funnelData.slug,
+        name: funnelData.name,
+        status: "active",
+        infusionsoft_form_html: funnelData.infusionsoftCode,
+        webinarfuel_widget_html: funnelData.webinarfuelCode,
+        registration_page_html: generatedPages.registrationHtml,
+        confirmation_page_html: generatedPages.confirmationHtml,
+      };
 
-      if (!response.ok) {
-        throw new Error("Failed to create funnel");
+      if (draftFunnelId) {
+        // Update existing draft to active
+        const response = await fetch(`/api/funnels/${draftFunnelId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to publish funnel");
+        }
+      } else {
+        // Create new funnel
+        const response = await fetch("/api/funnels", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to create funnel");
+        }
       }
 
       router.push("/admin");
     } catch (err: any) {
-      setError(err.message || "Failed to create funnel");
+      setError(err.message || "Failed to publish funnel");
     } finally {
       setLoading(false);
     }
@@ -178,6 +294,23 @@ export default function NewFunnelPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Auto-save indicator */}
+      <div className="mb-4 flex justify-end">
+        {autoSaving ? (
+          <span className="text-sm text-gray-500">
+            <svg className="animate-spin inline h-3 w-3 mr-1" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+            </svg>
+            Saving draft...
+          </span>
+        ) : draftFunnelId ? (
+          <span className="text-sm text-green-600">
+            ✓ Draft saved
+          </span>
+        ) : null}
+      </div>
+      
       {/* Progress Steps */}
       <nav aria-label="Progress">
         <ol className="flex items-center mb-8">

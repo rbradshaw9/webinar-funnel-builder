@@ -22,6 +22,18 @@ CREATE TABLE IF NOT EXISTS funnels (
   webinarfuel_version_id INTEGER,
   webinarfuel_widget_type VARCHAR(50), -- 'dropdown', 'single_session', 'recurring'
   webinarfuel_schedule JSONB, -- For recurring schedules: {tuesday: {time: '19:00', session_id: 66235}, saturday: {...}}
+  webinarfuel_url TEXT,
+  
+  -- Content Information (for AI generation)
+  webinar_title TEXT,
+  webinar_description TEXT,
+  target_audience TEXT,
+  main_benefits TEXT,
+  social_proof TEXT,
+  host_info TEXT,
+  urgency TEXT,
+  reference_url TEXT,
+  additional_notes TEXT,
   
   -- Page Content (AI Generated + User Edited)
   registration_page_html TEXT,

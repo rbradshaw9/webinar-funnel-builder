@@ -164,20 +164,31 @@ export default function AdminPage() {
               </div>
 
               <div className="bg-gray-50 px-5 py-3 flex justify-between items-center">
-                <Link
-                  href={`/admin/funnels/${funnel.id}`}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-500"
-                >
-                  Edit
-                </Link>
-                <div className="flex space-x-3">
+                {funnel.status === "draft" && !funnel.registration_page_html ? (
                   <Link
-                    href={`/${funnel.slug}`}
-                    target="_blank"
-                    className="text-sm font-medium text-gray-600 hover:text-gray-500"
+                    href={`/admin/funnels/new?draft=${funnel.id}`}
+                    className="text-sm font-medium text-orange-600 hover:text-orange-500"
                   >
-                    Preview
+                    ✏️ Continue Setup
                   </Link>
+                ) : (
+                  <Link
+                    href={`/admin/funnels/${funnel.id}`}
+                    className="text-sm font-medium text-blue-600 hover:text-blue-500"
+                  >
+                    Edit
+                  </Link>
+                )}
+                <div className="flex space-x-3">
+                  {funnel.status === "active" && (
+                    <Link
+                      href={`/${funnel.slug}`}
+                      target="_blank"
+                      className="text-sm font-medium text-gray-600 hover:text-gray-500"
+                    >
+                      Preview
+                    </Link>
+                  )}
                   <button
                     onClick={() => handleDelete(funnel.id)}
                     className="text-sm font-medium text-red-600 hover:text-red-500"

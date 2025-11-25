@@ -2,6 +2,8 @@
 
 An intelligent multi-funnel builder that automatically generates high-converting webinar registration pages using Claude AI, with seamless integrations to WebinarFuel and Infusionsoft.
 
+**Last Updated**: November 25, 2025
+
 ## Features
 
 - 🤖 **AI-Powered Page Generation** - Claude Sonnet 4.5 builds custom funnels by analyzing your Infusionsoft and WebinarFuel codes

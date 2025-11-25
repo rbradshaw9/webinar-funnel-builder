@@ -80,12 +80,20 @@ export async function POST(request: Request) {
 
       console.log('[Generate API] Regenerating pages for funnel:', funnel.id);
 
-      // Generate registration pages FIRST
-      const [registrationPageA, registrationPageB] = await Promise.all([
-        generateRegistrationPage(context, 'A'),
-        generateRegistrationPage(context, 'B'),
-      ]);
-
+      // Generate pages SEQUENTIALLY with delays to avoid rate limits (4000 tokens/min)
+      console.log('[Generate API] Generating variant A...');
+      const registrationPageA = await generateRegistrationPage(context, 'A');
+      
+      // Wait 5 seconds before next generation to stay within rate limits
+      console.log('[Generate API] Waiting 5s before generating variant B...');
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      const registrationPageB = await generateRegistrationPage(context, 'B');
+      
+      // Wait another 5 seconds before confirmation page
+      console.log('[Generate API] Waiting 5s before generating confirmation page...');
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
       // Generate confirmation page AFTER (so it can match registration styles)
       const confirmationPage = await generateConfirmationPage(context, registrationPageA);
 
@@ -169,13 +177,19 @@ export async function POST(request: Request) {
 
     console.log('[Generate API] Starting page generation with context');
 
-    // Generate registration pages FIRST (so AI can reuse styles for confirmation)
-    const [registrationPageA, registrationPageB] = await Promise.all([
-      generateRegistrationPage(context, 'A'),
-      generateRegistrationPage(context, 'B'),
-    ]);
-
-    console.log('[Generate API] Registration pages generated, now generating confirmation page');
+    // Generate pages SEQUENTIALLY with delays to avoid rate limits (4000 tokens/min)
+    console.log('[Generate API] Generating variant A...');
+    const registrationPageA = await generateRegistrationPage(context, 'A');
+    
+    // Wait 5 seconds before next generation to stay within rate limits
+    console.log('[Generate API] Waiting 5s before generating variant B...');
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    
+    const registrationPageB = await generateRegistrationPage(context, 'B');
+    
+    // Wait another 5 seconds before confirmation page
+    console.log('[Generate API] Waiting 5s before generating confirmation page...');
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
     // Generate confirmation page AFTER registration (pass registration HTML for style matching)
     const confirmationPage = await generateConfirmationPage(context, registrationPageA);

@@ -63,22 +63,7 @@ ${context.hostInfo ? `Host: ${context.hostInfo}` : ''}
 ${context.referenceUrl ? `Reference URL: ${context.referenceUrl} - Analyze this page for images, layout, and style inspiration` : ''}
 ${context.additionalNotes ? `Special Instructions: ${context.additionalNotes}` : ''}
 
-TECHNICAL INTEGRATION:
-Integrate these technical requirements seamlessly:
-
-Infusionsoft Form Data (for reference only - form will POST to /api/register):
-- Original Action URL: ${context.infusionsoftFields.actionUrl}
-- Original XID: ${context.infusionsoftFields.xid}
-- All Field Mappings: ${JSON.stringify(context.infusionsoftFields.fields)}
-- SMS Consent Field: ${context.infusionsoftFields.hasSmsConsent ? 'Required' : 'Not needed'}
-- Hidden Fields: Include ALL hidden fields from original form
-- Tracking Scripts: Include these at bottom of page (before </body>):
-${context.infusionsoftFields.trackingScripts ? context.infusionsoftFields.trackingScripts.join('\n') : '<!-- No tracking scripts -->'}
-
-WebinarFuel Widget:
-- Webinar ID: ${context.webinarfuelData.webinarId}
-- Widget ID: ${context.webinarfuelData.widgetId}
-- Widget Type: ${context.webinarfuelData.widgetType}
+TECHNICAL: WebinarFuel ID=${context.webinarfuelData.webinarId}, Widget=${context.webinarfuelData.widgetId}${context.infusionsoftFields.hasSmsConsent ? ', SMS consent checkbox required' : ''}
 
 DESIGN REQUIREMENTS (Modern, High-Converting, Creative):
 
@@ -153,7 +138,7 @@ Return ONLY complete HTML (no markdown). Modern, professional, visually stunning
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
-    max_tokens: 8192, // Increased from 4096 to prevent truncation
+    max_tokens: 4096, // Reduced to fit within rate limits (3 pages × 4096 = 12288 tokens total)
     messages: [{ role: "user", content: prompt }],
   }, {
     timeout: 120000, // 2 minute timeout
@@ -169,6 +154,7 @@ Return ONLY complete HTML (no markdown). Modern, professional, visually stunning
 
   if (message.stop_reason === 'max_tokens') {
     console.warn('[Claude AI] WARNING: Response was truncated due to max_tokens limit!');
+    console.warn('[Claude AI] Try simplifying the prompt or reducing content requirements');
   }
 
   const content = message.content[0];
@@ -264,7 +250,7 @@ Return ONLY complete HTML (no markdown, no code blocks). Enthusiastic, professio
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
-    max_tokens: 8192, // Increased from 4096 to prevent truncation
+    max_tokens: 4096, // Reduced to fit within rate limits
     messages: [{ role: "user", content: prompt }],
   }, {
     timeout: 120000, // 2 minute timeout
@@ -279,6 +265,7 @@ Return ONLY complete HTML (no markdown, no code blocks). Enthusiastic, professio
 
   if (message.stop_reason === 'max_tokens') {
     console.warn('[Claude AI] WARNING: Confirmation page was truncated due to max_tokens limit!');
+    console.warn('[Claude AI] Try simplifying the prompt or reducing content requirements');
   }
 
   const content = message.content[0];

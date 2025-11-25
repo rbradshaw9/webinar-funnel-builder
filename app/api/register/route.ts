@@ -139,11 +139,13 @@ export async function POST(request: Request) {
     // Update funnel stats
     await incrementFunnelSubmissions(funnel.id);
 
-    // Redirect to confirmation page
-    return NextResponse.redirect(
-      new URL(`/${slug}/confirmation`, request.url),
-      { status: 303 }
-    );
+    // Redirect to confirmation page (include session date if available)
+    const confirmUrl = new URL(`/${slug}/confirmation`, request.url);
+    if (sessionData?.date) {
+      confirmUrl.searchParams.set('session', sessionData.date.toISOString());
+    }
+    
+    return NextResponse.redirect(confirmUrl, { status: 303 });
   } catch (error: any) {
     console.error("Error processing registration:", error);
     return NextResponse.json(

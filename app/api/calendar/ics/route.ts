@@ -8,11 +8,8 @@ export async function GET(request: Request) {
     const title = searchParams.get("title") || "Webinar Registration";
     const description = searchParams.get("description") || "Join us for this exclusive webinar";
 
-    if (!sessionDate) {
-      return NextResponse.json({ error: "Session date required" }, { status: 400 });
-    }
-
-    const startTime = new Date(sessionDate);
+    // If no session date provided, use a placeholder date (7 days from now)
+    const startTime = sessionDate ? new Date(sessionDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     const endTime = calculateWebinarDuration(startTime, 60);
 
     const icsContent = generateICSFile({

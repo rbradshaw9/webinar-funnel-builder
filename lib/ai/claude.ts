@@ -144,7 +144,7 @@ IMPORTANT: Create layouts that are visually interesting and different from typic
      ${context.infusionsoftFields.hasSmsConsent ? '* <input type="checkbox" name="inf_custom_SMSOptInWebinar" value="1" /> SMS opt-in' : ''}
    - WebinarFuel widget below form:
      <div data-webinarfuel-webinar="${context.webinarfuelData.webinarId}" data-webinarfuel-widget="${context.webinarfuelData.widgetId}"></div>
-     <script src="https://app.webinarfuel.com/widgets/v2/embed.js"></script>
+     <script src="https://d3pw37i36t41cq.cloudfront.net/embed_v2.js" data-wf-load="wf-widget-embed"></script>
 
 IMPORTANT: Form action="/api/register" method="POST" (this handles both Infusionsoft AND WebinarFuel submission)
 ${variantNote}
@@ -237,10 +237,18 @@ CONTENT SECTIONS:
    - "Add to calendar" (with buttons below)
    - Email confirmation details
 3. Calendar Buttons (styled like registration CTAs):
-   - <a href="/api/calendar/google" class="[match registration button styles]">📅 Add to Google Calendar</a>
-   - <a href="/api/calendar/ics" class="[match registration button styles]">📅 Download ICS File</a>
+   - Add JavaScript to extract session date from URL and update calendar links:
+   <script>
+   // Extract session date from URL query parameter
+   var params = new URLSearchParams(window.location.search);
+   var sessionDate = params.get('session');
+   var calendarBase = '/api/calendar/';
+   var queryParams = sessionDate ? '?session=' + encodeURIComponent(sessionDate) + '&title=${encodeURIComponent(context.webinarTitle)}&description=${encodeURIComponent(context.webinarDescription)}' : '?title=${encodeURIComponent(context.webinarTitle)}&description=${encodeURIComponent(context.webinarDescription)}';
+   </script>
+   - <a href="#" onclick="window.location.href='/api/calendar/google' + queryParams; return false;" class="[match registration button styles]">📅 Add to Google Calendar</a>
+   - <a href="#" onclick="window.location.href='/api/calendar/ics' + queryParams; return false;" class="[match registration button styles]">📅 Download ICS File</a>
 4. WebinarFuel Widget Section (IMPORTANT):
-${context.confirmationWidgetCode ? `   - Use this EXACT custom widget code:\n${context.confirmationWidgetCode}` : `   - Use default: <div data-webinarfuel-webinar="${context.webinarfuelData.webinarId}" data-webinarfuel-widget="${context.webinarfuelData.widgetId}"></div><script src="https://app.webinarfuel.com/widgets/v2/embed.js"></script>`}
+${context.confirmationWidgetCode ? `   - Use this EXACT custom widget code:\n${context.confirmationWidgetCode}` : `   - Use default: <div data-webinarfuel-webinar="${context.webinarfuelData.webinarId}" data-webinarfuel-widget="${context.webinarfuelData.widgetId}"></div><script src="https://d3pw37i36t41cq.cloudfront.net/embed_v2.js" data-wf-load="wf-widget-embed"></script>`}
 5. What to Expect: Bullet points of webinar benefits/agenda
 6. Social Proof: Same style as registration page
 

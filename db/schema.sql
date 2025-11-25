@@ -32,11 +32,11 @@ CREATE TABLE IF NOT EXISTS funnels (
   -- Analytics
   total_views INTEGER DEFAULT 0,
   total_submissions INTEGER DEFAULT 0,
-  conversion_rate DECIMAL(5,2) DEFAULT 0.00,
-  
-  INDEX idx_slug (slug),
-  INDEX idx_status (status)
+  conversion_rate DECIMAL(5,2) DEFAULT 0.00
 );
+
+CREATE INDEX IF NOT EXISTS idx_slug ON funnels(slug);
+CREATE INDEX IF NOT EXISTS idx_status ON funnels(status);
 
 CREATE TABLE IF NOT EXISTS funnel_submissions (
   id SERIAL PRIMARY KEY,
@@ -58,11 +58,11 @@ CREATE TABLE IF NOT EXISTS funnel_submissions (
   webinarfuel_success BOOLEAN DEFAULT FALSE,
   submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   ip_address VARCHAR(45),
-  user_agent TEXT,
-  
-  INDEX idx_funnel_email (funnel_id, email),
-  INDEX idx_submitted_at (submitted_at)
+  user_agent TEXT
 );
+
+CREATE INDEX IF NOT EXISTS idx_funnel_email ON funnel_submissions(funnel_id, email);
+CREATE INDEX IF NOT EXISTS idx_submitted_at ON funnel_submissions(submitted_at);
 
 CREATE TABLE IF NOT EXISTS funnel_versions (
   id SERIAL PRIMARY KEY,
@@ -83,9 +83,10 @@ CREATE TABLE IF NOT EXISTS funnel_versions (
   
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   
-  UNIQUE(funnel_id, version_number),
-  INDEX idx_funnel_active (funnel_id, is_active)
+  UNIQUE(funnel_id, version_number)
 );
+
+CREATE INDEX IF NOT EXISTS idx_funnel_active ON funnel_versions(funnel_id, is_active);
 
 CREATE TABLE IF NOT EXISTS funnel_analytics (
   id SERIAL PRIMARY KEY,
@@ -100,9 +101,10 @@ CREATE TABLE IF NOT EXISTS funnel_analytics (
   -- Traffic Sources
   traffic_sources JSONB, -- {direct: 10, organic: 5, paid: 20, ...}
   
-  UNIQUE(funnel_id, date),
-  INDEX idx_funnel_date (funnel_id, date)
+  UNIQUE(funnel_id, date)
 );
+
+CREATE INDEX IF NOT EXISTS idx_funnel_date ON funnel_analytics(funnel_id, date);
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()

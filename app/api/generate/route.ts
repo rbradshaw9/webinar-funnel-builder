@@ -89,7 +89,14 @@ export async function POST(request: Request) {
       },
     });
   } catch (error: any) {
-    console.error("Error generating pages:", error);
+    console.error("[Generate API] Error generating pages:", error);
+    console.error("[Generate API] Error details:", {
+      message: error.message,
+      status: error.status,
+      name: error.name,
+      apiKeyPresent: !!process.env.ANTHROPIC_API_KEY,
+      apiKeyLength: process.env.ANTHROPIC_API_KEY?.length,
+    });
     return NextResponse.json(
       { error: error.message || "Failed to generate pages" },
       { status: 500 }

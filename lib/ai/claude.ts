@@ -1,5 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
 
+// Debug: Check if API key is loaded
+if (!process.env.ANTHROPIC_API_KEY) {
+  console.error('[Claude AI] ANTHROPIC_API_KEY is not set in environment variables');
+}
+
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });

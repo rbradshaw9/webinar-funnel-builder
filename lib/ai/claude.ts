@@ -20,6 +20,7 @@ export interface FunnelContext {
   urgency?: string;
   referenceUrl?: string;
   additionalNotes?: string;
+  confirmationWidgetCode?: string;
   infusionsoftFields: {
     actionUrl: string;
     xid: string;
@@ -36,10 +37,12 @@ export interface FunnelContext {
   };
 }
 
-export async function generateRegistrationPage(context: FunnelContext): Promise<string> {
-  console.log('[Claude AI] Generating registration page...');
+export async function generateRegistrationPage(context: FunnelContext, variant: 'A' | 'B' = 'A'): Promise<string> {
+  console.log(`[Claude AI] Generating registration page variant ${variant}...`);
   
-  const prompt = `Create a high-converting webinar registration page.
+  const variantNote = variant === 'B' ? '\n\nVARIANT B REQUIREMENTS:\n- Use a DIFFERENT design approach than variant A\n- Try different: color scheme, layout structure, or headline angle\n- Maintain same conversion elements but with fresh presentation\n- Still modern and professional but visually distinct' : '';
+  
+  const prompt = `Create a high-converting webinar registration page${variant === 'B' ? ' (Variant B for A/B testing)' : ''}.
 
 CONTEXT:
 Title: ${context.webinarTitle}
@@ -68,37 +71,32 @@ WebinarFuel Widget:
 - Widget ID: ${context.webinarfuelData.widgetId}
 - Widget Type: ${context.webinarfuelData.widgetType}
 
-DESIGN REQUIREMENTS (CRITICAL - Apple-level quality):
-1. TYPOGRAPHY & CONTRAST:
-   - Include Tailwind CSS CDN: <script src="https://cdn.tailwindcss.com"></script>
-   - Hero headline: text-6xl font-bold text-white on dark gradient background
-   - Body text: text-lg text-gray-800 on white/light backgrounds (WCAG AAA contrast)
-   - Subheadings: text-3xl font-semibold text-gray-900
-   - Always use sufficient contrast - white text on dark, dark text on light
-   - Line height 1.6 for body copy, 1.2 for headlines
+DESIGN REQUIREMENTS (Modern, Professional, Conversion-Focused):
 
-2. LAYOUT & SPACING:
-   - Clean, spacious Apple-style design with generous whitespace
-   - Container: max-w-4xl mx-auto px-6
-   - Section spacing: py-16 md:py-24
-   - Element spacing: space-y-8 for major elements, space-y-4 for related content
-   - Form inputs: py-3 px-4 text-lg with focus:ring-4 focus:ring-blue-500/20
+CORE PRINCIPLES:
+- Include Tailwind CSS CDN: <script src="https://cdn.tailwindcss.com"></script>
+- MODERN & CLEAN: Contemporary design with smooth gradients, subtle shadows, and professional aesthetics
+- SPACIOUS: Generous whitespace (py-16 md:py-24 sections, max-w-4xl containers)
+- HIGH CONTRAST: WCAG AAA compliance - dark text on light, light text on dark (7:1 ratio minimum)
+- RESPONSIVE: Mobile-first with perfect scaling on all devices
+- SMOOTH: Transitions on hover (transition-all duration-300), rounded corners (rounded-xl)
 
-3. COLOR & VISUAL HIERARCHY:
-   - Hero gradient: bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900
-   - CTA buttons: bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800
-   - Accent color: blue-600 for links and highlights
-   - Backgrounds: white or bg-gray-50 for alternating sections
-   - Borders: border-gray-200 (subtle, not prominent)
+VISUAL STYLE (Be Creative & Modern):
+- Hero: Bold gradients (consider: slate/blue, purple/indigo, or teal/cyan combinations)
+- Typography: Large, impactful headlines with modern font weights
+- CTAs: Vibrant, gradient buttons with hover effects and shadows
+- Cards/Sections: Subtle shadows (shadow-lg), clean borders, alternating backgrounds
+- Icons/Graphics: Use emojis or SVG icons for visual interest
+- Color Palette: Choose cohesive, professional colors (not just blue - be creative!)
 
-4. DIRECT RESPONSE TACTICS:
-   - Strong benefit-driven headline above the fold
-   - Social proof section with testimonials/stats
-   - Scarcity/urgency messaging (limited seats, countdown timer)
-   - Clear single call-to-action (CTA)
-   - Risk reversal language (free, no credit card, etc)
-   - Bullet points highlighting transformation/benefits
-   - Authority indicators (credentials, logos, press mentions)
+CONVERSION ELEMENTS:
+- Benefit-driven headline above the fold
+- Social proof (testimonials, stats, logos)
+- Scarcity/urgency messaging
+- Clear single CTA
+- Risk reversal (free, no obligation)
+- Transformation-focused bullet points
+- Trust indicators
 
 5. FOOTER (REQUIRED - MUST INCLUDE AT BOTTOM OF PAGE):
    - Full-width footer with bg-gray-900 text-gray-400 py-12 px-6
@@ -121,8 +119,9 @@ DESIGN REQUIREMENTS (CRITICAL - Apple-level quality):
      <script src="https://app.webinarfuel.com/widgets/v2/embed.js"></script>
 
 IMPORTANT: Form action="/api/register" method="POST" (this handles both Infusionsoft AND WebinarFuel submission)
+${variantNote}
 
-Return ONLY complete HTML (no markdown). Professional Apple-quality design with perfect contrast ratios.`;
+Return ONLY complete HTML (no markdown). Modern, professional, visually stunning design.`;
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
@@ -145,10 +144,10 @@ Return ONLY complete HTML (no markdown). Professional Apple-quality design with 
   throw new Error("Failed to generate registration page");
 }
 
-export async function generateConfirmationPage(context: FunnelContext): Promise<string> {
+export async function generateConfirmationPage(context: FunnelContext, registrationPageStyles?: string): Promise<string> {
   console.log('[Claude AI] Generating confirmation page...');
   
-  const prompt = `Create a webinar confirmation/thank you page.
+  const prompt = `Create a webinar confirmation/thank you page that MATCHES the registration page design.
 
 CONTEXT:
 Title: ${context.webinarTitle}
@@ -156,28 +155,37 @@ Description: ${context.webinarDescription}
 ${context.socialProof ? `Proof: ${context.socialProof}` : ''}
 ${context.hostInfo ? `Host: ${context.hostInfo}` : ''}
 
-STYLING (CRITICAL):
-- Tailwind CDN: <script src="https://cdn.tailwindcss.com"></script>
-- Success colors: bg-green-600, text-green-600
-- Large celebration text: text-5xl font-bold
-- Icons: ✓ checkmark, 📅 calendar, 📧 email
-- Professional gradients and shadows
+DESIGN REQUIREMENTS (CRITICAL - MUST MATCH REGISTRATION PAGE):
+- Use Tailwind CSS CDN: <script src="https://cdn.tailwindcss.com"></script>
+- USE THE EXACT SAME: color scheme, gradients, typography, spacing, and overall aesthetic as registration page
+- Hero should use similar gradient background (swap in success/green accents)
+- Buttons should match registration page CTA style
+- Section layouts should feel cohesive with registration page
+- Footer must be IDENTICAL to registration page
+
+SUCCESS ELEMENTS:
+- Large checkmark icon (✓) or celebration emoji (🎉)
+- Success headline: "You're Registered!" or "Success! See You Soon!"
+- Success colors: Green accents mixed with your chosen brand colors
 
 CONTENT SECTIONS:
-1. Hero: Big congratulations with checkmark icon
-2. Next Steps: Check email (bold), add to calendar
-3. Calendar Buttons:
-   - <a href="/api/calendar/google" class="bg-blue-600...">Add to Google Calendar</a>
-   - <a href="/api/calendar/ics" class="bg-gray-600...">Download ICS</a>
-4. WebinarFuel countdown/replay widget:
-   <div data-webinarfuel-webinar="${context.webinarfuelData.webinarId}" data-webinarfuel-widget="${context.webinarfuelData.widgetId}"></div>
-   <script src="https://app.webinarfuel.com/widgets/v2/embed.js"></script>
-5. What to Expect: Bullet points of benefits
-6. Social proof section
+1. Hero Success Message: Big congratulations with icon
+2. Next Steps Section:
+   - "Check your email" (bold, emphasized)
+   - "Add to calendar" (with buttons below)
+   - Email confirmation details
+3. Calendar Buttons (styled like registration CTAs):
+   - <a href="/api/calendar/google" class="[match registration button styles]">📅 Add to Google Calendar</a>
+   - <a href="/api/calendar/ics" class="[match registration button styles]">📅 Download ICS File</a>
+4. WebinarFuel Widget Section (IMPORTANT):
+${context.confirmationWidgetCode ? `   - Use this EXACT custom widget code:\n${context.confirmationWidgetCode}` : `   - Use default: <div data-webinarfuel-webinar="${context.webinarfuelData.webinarId}" data-webinarfuel-widget="${context.webinarfuelData.widgetId}"></div><script src="https://app.webinarfuel.com/widgets/v2/embed.js"></script>`}
+5. What to Expect: Bullet points of webinar benefits/agenda
+6. Social Proof: Same style as registration page
 
-FOOTER (REQUIRED - SAME AS REGISTRATION PAGE):
+FOOTER (REQUIRED - IDENTICAL TO REGISTRATION PAGE):
 - Full-width bg-gray-900 text-gray-400 py-12 px-6
-- © 2024 Tanner Training LLC with links to Terms, Privacy, Disclaimer
+- © 2024 Tanner Training LLC
+- Links: Terms | Privacy | Disclaimer
 - Full disclaimer text in text-xs
 
 Return ONLY complete HTML (no markdown, no code blocks). Enthusiastic, professional design with Tailwind.`;

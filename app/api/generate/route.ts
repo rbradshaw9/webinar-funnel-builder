@@ -60,6 +60,7 @@ export async function POST(request: Request) {
         urgency: funnel.urgency,
         referenceUrl: funnel.reference_url,
         additionalNotes: funnel.additional_notes,
+        confirmationWidgetCode: funnel.confirmation_widget_code,
         infusionsoftFields: {
           actionUrl: infusionsoftData.actionUrl,
           xid: infusionsoftData.xid,
@@ -78,18 +79,20 @@ export async function POST(request: Request) {
 
       console.log('[Generate API] Regenerating pages for funnel:', funnel.id);
 
-      const [registrationPage, confirmationPage] = await Promise.all([
-        generateRegistrationPage(context),
+      const [registrationPageA, registrationPageB, confirmationPage] = await Promise.all([
+        generateRegistrationPage(context, 'A'),
+        generateRegistrationPage(context, 'B'),
         generateConfirmationPage(context),
       ]);
 
-      // Update database
-      await updateFunnelPages(funnel.id, registrationPage, confirmationPage);
+      // Update database (store variant A as default)
+      await updateFunnelPages(funnel.id, registrationPageA, confirmationPage);
 
       console.log('[Generate API] Pages regenerated successfully');
 
       return NextResponse.json({
-        registrationPage,
+        registrationPage: registrationPageA,
+        registrationPageVariantB: registrationPageB,
         confirmationPage,
       });
     }
@@ -141,6 +144,7 @@ export async function POST(request: Request) {
       urgency,
       referenceUrl,
       additionalNotes,
+      confirmationWidgetCode: body.confirmationWidgetCode,
       infusionsoftFields: {
         actionUrl: infusionsoftData.actionUrl,
         xid: infusionsoftData.xid,
@@ -159,16 +163,18 @@ export async function POST(request: Request) {
 
     console.log('[Generate API] Starting page generation with context');
 
-    // Generate pages using Claude AI with increased timeout
-    const [registrationPage, confirmationPage] = await Promise.all([
-      generateRegistrationPage(context),
+    // Generate pages using Claude AI with increased timeout (includes A/B variants)
+    const [registrationPageA, registrationPageB, confirmationPage] = await Promise.all([
+      generateRegistrationPage(context, 'A'),
+      generateRegistrationPage(context, 'B'),
       generateConfirmationPage(context),
     ]);
 
-    console.log('[Generate API] Pages generated successfully');
+    console.log('[Generate API] Pages generated successfully (2 variants + confirmation)');
 
     return NextResponse.json({
-      registrationPage,
+      registrationPage: registrationPageA,
+      registrationPageVariantB: registrationPageB,
       confirmationPage,
       parsedData: {
         infusionsoft: infusionsoftData,

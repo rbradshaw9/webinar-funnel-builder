@@ -33,6 +33,7 @@ export interface Funnel {
   urgency?: string;
   reference_url?: string;
   additional_notes?: string;
+  confirmation_widget_code?: string;
   
   // Generated Content
   registration_page_html?: string;

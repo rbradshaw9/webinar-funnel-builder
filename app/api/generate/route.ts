@@ -4,6 +4,9 @@ import { parseInfusionsoftForm } from "@/lib/parsers/infusionsoft";
 import { parseWebinarFuelWidget } from "@/lib/parsers/webinarfuel";
 import { generateRegistrationPage, generateConfirmationPage, FunnelContext } from "@/lib/ai/claude";
 
+// Vercel Pro allows up to 300s, Hobby allows 10s
+export const maxDuration = 300;
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession();

@@ -11,6 +11,7 @@ export default function EditFunnelPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -64,6 +65,41 @@ export default function EditFunnelPage() {
       setError(err.message || "Failed to update funnel");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleGenerate = async () => {
+    if (!confirm("Generate or regenerate pages for this funnel? This may take 1-2 minutes.")) {
+      return;
+    }
+
+    setGenerating(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ funnelId: parseInt(funnelId) }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to generate pages");
+      }
+
+      const data = await response.json();
+      setSuccess("Pages generated successfully!");
+      
+      // Reload funnel to show the new pages
+      await loadFunnel();
+      
+      setTimeout(() => setSuccess(""), 5000);
+    } catch (err: any) {
+      setError(err.message || "Failed to generate pages");
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -193,25 +229,49 @@ export default function EditFunnelPage() {
           </div>
         </div>
 
-        {/* Preview Links */}
+        {/* Pages */}
         <div>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Pages</h2>
-          <div className="space-y-2">
-            <Link
-              href={`/${funnel.slug}`}
-              target="_blank"
-              className="block text-blue-600 hover:text-blue-800"
-            >
-              Registration Page →
-            </Link>
-            <Link
-              href={`/${funnel.slug}/confirmation`}
-              target="_blank"
-              className="block text-blue-600 hover:text-blue-800"
-            >
-              Confirmation Page →
-            </Link>
-          </div>
+          {!funnel.registration_page_html || !funnel.confirmation_page_html ? (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
+              <p className="text-sm text-yellow-800 mb-3">
+                {!funnel.registration_page_html && !funnel.confirmation_page_html
+                  ? "No pages have been generated yet."
+                  : "Some pages are missing. Generate to create all pages."}
+              </p>
+              <button
+                onClick={handleGenerate}
+                disabled={generating}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {generating ? "Generating... (1-2 min)" : "Generate Pages"}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2 mb-4">
+              <Link
+                href={`/${funnel.slug}`}
+                target="_blank"
+                className="block text-blue-600 hover:text-blue-800"
+              >
+                Registration Page →
+              </Link>
+              <Link
+                href={`/${funnel.slug}/confirmation`}
+                target="_blank"
+                className="block text-blue-600 hover:text-blue-800"
+              >
+                Confirmation Page →
+              </Link>
+            </div>
+          )}
+          <button
+            onClick={handleGenerate}
+            disabled={generating}
+            className="text-sm text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {generating ? "Regenerating..." : "Regenerate Pages"}
+          </button>
         </div>
 
         {/* Actions */}

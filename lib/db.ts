@@ -21,8 +21,20 @@ export interface Funnel {
   webinarfuel_version_id?: number;
   webinarfuel_widget_type?: 'dropdown' | 'single_session' | 'recurring';
   webinarfuel_schedule?: Record<string, any>;
+  webinarfuel_url?: string;
   
-  // Content
+  // Webinar Content
+  webinar_title?: string;
+  webinar_description?: string;
+  target_audience?: string;
+  main_benefits?: string;
+  social_proof?: string;
+  host_info?: string;
+  urgency?: string;
+  reference_url?: string;
+  additional_notes?: string;
+  
+  // Generated Content
   registration_page_html?: string;
   registration_page_metadata?: Record<string, any>;
   confirmation_page_html?: string;
@@ -213,4 +225,19 @@ export async function getFunnelAnalytics(funnelId: number, days: number = 30) {
     ORDER BY date DESC
   `;
   return result.rows;
+}
+
+export async function updateFunnelPages(
+  id: number,
+  registrationHtml: string,
+  confirmationHtml: string
+): Promise<void> {
+  await sql`
+    UPDATE funnels
+    SET
+      registration_page_html = ${registrationHtml},
+      confirmation_page_html = ${confirmationHtml},
+      updated_at = NOW()
+    WHERE id = ${id}
+  `;
 }

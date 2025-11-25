@@ -22,6 +22,7 @@ export interface Funnel {
   webinarfuel_widget_type?: 'dropdown' | 'single_session' | 'recurring';
   webinarfuel_schedule?: Record<string, any>;
   webinarfuel_url?: string;
+  webinarfuel_oneclick_key?: string;
   
   // Webinar Content
   webinar_title?: string;

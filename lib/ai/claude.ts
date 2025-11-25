@@ -71,39 +71,58 @@ WebinarFuel Widget:
 - Widget ID: ${context.webinarfuelData.widgetId}
 - Widget Type: ${context.webinarfuelData.widgetType}
 
-DESIGN REQUIREMENTS (Modern, Professional, Conversion-Focused):
+DESIGN REQUIREMENTS (Modern, High-Converting, Creative):
 
-CORE PRINCIPLES:
+CREATIVE FREEDOM:
+You have full creative control! Feel free to use:
+- Multi-column layouts, split screens, asymmetric designs, zigzag sections
+- Creative hero sections with overlapping elements or unique shapes
+- Interesting card layouts, feature grids, or timeline designs  
+- Beautiful backgrounds (gradients, patterns, subtle textures, images)
+- Dynamic spacing and modern visual hierarchy
+- Trendy UI elements where appropriate (but keep it professional)
+- Different layout structures - NOT just single column!
+
+CORE PRINCIPLES (Non-Negotiable):
 - Include Tailwind CSS CDN: <script src="https://cdn.tailwindcss.com"></script>
-- MODERN & CLEAN: Contemporary design with smooth gradients, subtle shadows, and professional aesthetics
-- SPACIOUS: Generous whitespace (py-16 md:py-24 sections, max-w-4xl containers)
-- HIGH CONTRAST: WCAG AAA compliance - dark text on light, light text on dark (7:1 ratio minimum)
-- RESPONSIVE: Mobile-first with perfect scaling on all devices
-- SMOOTH: Transitions on hover (transition-all duration-300), rounded corners (rounded-xl)
+- HIGH CONTRAST: WCAG AAA - all text must be easily readable (7:1 ratio minimum)
+- RESPONSIVE: Perfect on mobile, tablet, and desktop
+- PROFESSIONAL: High-quality, polished - worthy of Apple or premium brands
+- FAST: Optimized for performance
 
-VISUAL STYLE (Be Creative & Modern):
-- Hero: Bold gradients (consider: slate/blue, purple/indigo, or teal/cyan combinations)
-- Typography: Large, impactful headlines with modern font weights
-- CTAs: Vibrant, gradient buttons with hover effects and shadows
-- Cards/Sections: Subtle shadows (shadow-lg), clean borders, alternating backgrounds
-- Icons/Graphics: Use emojis or SVG icons for visual interest
-- Color Palette: Choose cohesive, professional colors (not just blue - be creative!)
+SUGGESTED ELEMENTS (Use creatively):
+- Bold, attention-grabbing headlines
+- Compelling CTAs with visual prominence
+- Social proof (testimonials, stats, trust badges)
+- Benefit-focused content
+- Visual hierarchy that guides the eye
+- Modern typography and spacing
 
-CONVERSION ELEMENTS:
-- Benefit-driven headline above the fold
-- Social proof (testimonials, stats, logos)
-- Scarcity/urgency messaging
-- Clear single CTA
-- Risk reversal (free, no obligation)
-- Transformation-focused bullet points
-- Trust indicators
+IMPORTANT: Create layouts that are visually interesting and different from typical single-column landing pages. Use creative multi-column sections, split layouts, and interesting visual arrangements!
 
-5. FOOTER (REQUIRED - MUST INCLUDE AT BOTTOM OF PAGE):
-   - Full-width footer with bg-gray-900 text-gray-400 py-12 px-6
-   - Centered content: max-w-4xl mx-auto text-center
-   - Company name first: <p class="text-white font-semibold mb-4">© 2024 Tanner Training LLC</p>
-   - Links on one line with separators: <a href="https://thecashflowacademy.com/terms-and-conditions/" class="text-gray-400 hover:text-white">Terms of Use</a> <span class="text-gray-600">|</span> <a href="https://thecashflowacademy.com/privacy-policy/" class="text-gray-400 hover:text-white">Privacy Policy</a> <span class="text-gray-600">|</span> <a href="https://thecashflowacademy.com/disclaimer/" class="text-gray-400 hover:text-white">Disclaimer</a>
-   - Full disclaimer below in small text (text-xs text-gray-500 mt-6 leading-relaxed): "Tanner Training LLC is providing this training and any related materials (including newsletters, blog posts, and other communications) for educational purposes only. We are not providing legal, accounting, or financial advisory services, and this is not a solicitation or recommendation to buy or sell any stocks, options, or other financial instruments or investments. Examples that address specific assets, stocks, options, or transactions are for illustrative purposes only and may not represent specific trades or transactions that we have conducted. In fact, we may use examples that are different to or the opposite of transactions we have conducted or positions we hold. This training is not intended as a solicitation for any future relationship between the students or participants and the trainer. No express or implied warranties are being made with respect to these services and products. There is no guarantee that use of any of the services or products will result in a profit. All investing and trading in the securities markets involves risk, including the risk of loss. All investing decisions are personal and should only be made after thorough research and the engagement of professional assistance to the extent you believe necessary."
+5. FOOTER (ABSOLUTELY MANDATORY - CANNOT BE OMITTED):
+   THIS FOOTER MUST APPEAR ON EVERY PAGE NO MATTER WHAT THE DESIGN IS
+   
+   Required Structure:
+   - Full-width footer section at bottom of page
+   - Dark background (bg-gray-900 or similar)
+   - Padding: py-12 px-6
+   - Center-aligned: max-w-4xl mx-auto text-center
+   
+   Required Content:
+   a) Copyright: <p class="text-white font-semibold mb-4">© 2025 Tanner Training LLC</p>
+   
+   b) Legal links with separators:
+      <a href="https://thecashflowacademy.com/terms-and-conditions/" class="text-gray-400 hover:text-white transition-colors">Terms and Conditions</a>
+      <span class="text-gray-600 mx-2">|</span>
+      <a href="https://thecashflowacademy.com/privacy-policy/" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
+      <span class="text-gray-600 mx-2">|</span>
+      <a href="https://thecashflowacademy.com/disclaimer/" class="text-gray-400 hover:text-white transition-colors">Disclaimer</a>
+   
+   c) Full disclaimer (text-xs text-gray-500 mt-6 leading-relaxed max-w-3xl mx-auto):
+      "Tanner Training LLC is providing this training and any related materials (including newsletters, blog posts, and other communications) for educational purposes only. We are not providing legal, accounting, or financial advisory services, and this is not a solicitation or recommendation to buy or sell any stocks, options, or other financial instruments or investments. Examples that address specific assets, stocks, options, or transactions are for illustrative purposes only and may not represent specific trades or transactions that we have conducted. In fact, we may use examples that are different to or the opposite of transactions we have conducted or positions we hold. This training is not intended as a solicitation for any future relationship between the students or participants and the trainer. No express or implied warranties are being made with respect to these services and products. There is no guarantee that use of any of the services or products will result in a profit. All investing and trading in the securities markets involves risk, including the risk of loss. All investing decisions are personal and should only be made after thorough research and the engagement of professional assistance to the extent you believe necessary."
+   
+   CRITICAL: All content above MUST be included. Footer can match your design but content is non-negotiable.
 
 6. TECHNICAL INTEGRATION (CRITICAL - FORM SUBMISSION):
    - Form action="/api/register" method="POST" (THIS IS REQUIRED - NOT Infusionsoft URL!)
@@ -182,11 +201,13 @@ ${context.confirmationWidgetCode ? `   - Use this EXACT custom widget code:\n${c
 5. What to Expect: Bullet points of webinar benefits/agenda
 6. Social Proof: Same style as registration page
 
-FOOTER (REQUIRED - IDENTICAL TO REGISTRATION PAGE):
-- Full-width bg-gray-900 text-gray-400 py-12 px-6
-- © 2024 Tanner Training LLC
-- Links: Terms | Privacy | Disclaimer
-- Full disclaimer text in text-xs
+FOOTER (ABSOLUTELY MANDATORY - IDENTICAL TO REGISTRATION PAGE):
+Copy the EXACT footer structure from the registration page.
+Must include:
+- © 2025 Tanner Training LLC
+- Links to Terms and Conditions | Privacy Policy | Disclaimer (with separators)
+- Full disclaimer text in small print
+- Same styling as registration page footer
 
 Return ONLY complete HTML (no markdown, no code blocks). Enthusiastic, professional design with Tailwind.`;
 

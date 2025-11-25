@@ -76,12 +76,15 @@ export async function POST(request: Request) {
       // Submit to WebinarFuel (only include phone if SMS consent is checked)
       submitToWebinarFuel(
         funnel.webinarfuel_webinar_id!,
+        funnel.webinarfuel_widget_id!,
         sessionData?.sessionId || 0,
         {
           email,
           firstName: firstName || "",
           lastName: lastName || "",
           phone: smsConsent ? (phone || "") : "", // Only send phone if SMS consent is true
+          timeZone: "UTC", // Could extract from request if needed
+          source: "registration_form",
         },
         process.env.WEBINARFUEL_BEARER_TOKEN!
       ).catch(err => ({ success: false, error: err.message })),

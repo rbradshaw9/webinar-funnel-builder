@@ -42,11 +42,28 @@ export function parseWebinarFuelWidget(html: string, widgetUrl?: string): Webina
 
   // Try to extract from script tags if not in URL
   const scripts = $('script').toArray();
+  let sessionId: number | undefined;
+  
   for (const script of scripts) {
     const scriptContent = $(script).html() || '';
     
+    // Look for session ID in various formats
+    if (!sessionId) {
+      // Format 1: var sessionId = "70047" or sessionId="70047"
+      const sessionMatch1 = scriptContent.match(/(?:var|let|const)?\s*sessionId\s*=\s*["']?(\d+)["']?/);
+      if (sessionMatch1) {
+        sessionId = parseInt(sessionMatch1[1]);
+      }
+      
+      // Format 2: webinar_session_id: 70047
+      const sessionMatch2 = scriptContent.match(/webinar_session_id["']?\s*:\s*["']?(\d+)["']?/);
+      if (sessionMatch2) {
+        sessionId = parseInt(sessionMatch2[1]);
+      }
+    }
+    
     // Look for window._wf configuration
-    const wfMatch = scriptContent.match(/window\._wf\s*=\s*window\._wf\s*\|\|\s*\[\]\s*;\s*window\._wf\.push\({[\s\S]*?id:\s*['"]([^'"]+)['"]/);
+    const wfMatch = scriptContent.match(/window\._wf\s*=\s*window\._wf\s*\|\|\s*\[\]\s*;\s*window\._wf\.push\({\s*[\s\S]*?id:\s*['"]([^'"]+)['"]/);
     if (wfMatch) {
       widgetId = widgetId || parseInt(wfMatch[1].split('_')[0] || '0');
     }
@@ -80,6 +97,7 @@ export function parseWebinarFuelWidget(html: string, widgetUrl?: string): Webina
     webinarId,
     widgetId,
     versionId,
+    sessionId,
     widgetType,
     embedCode: html
   };
@@ -100,46 +118,64 @@ export function detectRecurringSchedule(widgetData: WebinarFuelWidgetData): {
 }
 
 /**
- * Submit registration to WebinarFuel API
+ * Submit registration to WebinarFuel using Embed V2 Viewers API
+ * This matches the working implementation - uses Bearer token authentication
+ * API endpoint: https://embed.webby.app/embed/v2/viewers
  */
 export async function submitToWebinarFuel(
   webinarId: number,
+  versionId: number,
   sessionId: number,
   userData: {
     email: string;
     firstName?: string;
     lastName?: string;
     phone?: string;
+    timeZone?: string;
+    source?: string;
+    referrer?: string;
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+    utmTerm?: string;
+    utmContent?: string;
+    userAgent?: string;
   },
   bearerToken: string
 ): Promise<{ success: boolean; cid?: string; error?: string }> {
   try {
-    // Only include phone in payload if it's provided and not empty
-    const registrant: any = {
-      email: userData.email,
-      first_name: userData.firstName,
-      last_name: userData.lastName,
-    };
-    
-    if (userData.phone && userData.phone.trim() !== '') {
-      registrant.phone = userData.phone;
-    }
-
+    // Build payload matching WebinarFuel Embed V2 API structure
     const payload = {
-      webinar_id: webinarId,
-      registrant,
-      session: {
-        webinar_session_id: sessionId
+      version_id: versionId,
+      recaptcha_action: 'wf_verify_recaptcha',
+      viewer: {
+        webinar_session_id: sessionId,
+        time_zone: userData.timeZone || 'UTC',
+        email: userData.email,
+        first_name: userData.firstName || '',
+        last_name: userData.lastName || '',
+        phone: userData.phone || '',
+        lead: false,
+        registration_source_widget_type: 'embed',
+        registration_source_widget_name: 'embed',
+        widget_id: webinarId,
+        widget_version_id: versionId,
+        source: userData.source || '',
+        utm_source: userData.utmSource || '',
+        utm_medium: userData.utmMedium || '',
+        utm_campaign: userData.utmCampaign || '',
+        utm_term: userData.utmTerm || '',
+        utm_content: userData.utmContent || '',
       }
     };
 
-    const response = await fetch('https://api.webinarfuel.com/api/registrants', {
+    const response = await fetch('https://embed.webby.app/embed/v2/viewers', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${bearerToken}`,
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${bearerToken}`,
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -151,8 +187,9 @@ export async function submitToWebinarFuel(
     
     return {
       success: true,
-      cid: result.registrant_session?.cid || result.cid
+      cid: result.cid || result.viewer?.cid
     };
+    
   } catch (error) {
     console.error('WebinarFuel submission error:', error);
     return {
